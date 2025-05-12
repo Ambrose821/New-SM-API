@@ -1,7 +1,7 @@
 import { Schema, model } from "mongoose";
 import Media from "../types";
 
-const mediSchema = new Schema<Media>({
+const rawMediSchema = new Schema<Media>({
     headline:{
         type: String,
         required:true,
@@ -38,11 +38,11 @@ const mediSchema = new Schema<Media>({
     },
     creditTo:{
         type:String,
-        default:'unKnown'
+        default:'unknown'
 
     }
 
 })
 
 
-export default model<Media>('Media',mediSchema)
+export default model<Media>('RawMedia',rawMediSchema)

@@ -7,13 +7,15 @@ import session from 'express-session'
 import path from 'path'
 
 
-
+//My Stuff
 import { nineStrategy } from './services/Sourcing/SourcingStrategy'
+import connectDB from './config/db'
 
+connectDB()
 //Testing stuff 
-const strat = new nineStrategy()
+//const strat = new nineStrategy()
 
-strat.sourceFeed('https://9gagrss.com/feed/')
+//strat.sourceFeed('https://9gagrss.com/feed/')
 
 
 
@@ -55,7 +57,7 @@ app.use(function(err:any, req:any, res:any, next:any) {
   });
 
 
-app.listen(PORT, () =>{
+app.listen(PORT, () =>{ 
     console.log(`Server Running on ${PORT}`)
 })
 
