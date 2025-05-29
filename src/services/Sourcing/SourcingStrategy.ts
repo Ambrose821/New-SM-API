@@ -1,5 +1,5 @@
 import {getRssFeed} from '../Sourcing/rssHelper/fetchFeed'
-
+import {Media} from '../../types';
 
 
 
@@ -12,12 +12,12 @@ import {getRssFeed} from '../Sourcing/rssHelper/fetchFeed'
  * IMPORTANT: Each strategy should, regardless of RSS return format, return a valid object of type Media so that i can be forwarded through the pipeline
  * 
  * **/
-interface RssSourcingStrategy {
-    sourceFeed(url:any):Promise<Object |null>;
+export interface RssSourcingStrategy {
+    sourceFeed(url:any):Promise<Media |null>;
 }
 
 export class nineStrategy implements RssSourcingStrategy{
-    async sourceFeed(url:any):Promise<Object |null>{
+    async sourceFeed(url:any):Promise<Media |null>{
         try{
             
             const feedItems = await getRssFeed(url)
@@ -26,22 +26,41 @@ export class nineStrategy implements RssSourcingStrategy{
 
            
         }catch(err){
-            console.error("Error in nineStrategy.sourceFeed(): ",err)
+           // console.error("Error in nineStrategy.sourceFeed(): ",err)
+            throw new Error("Error in nineStrategy: " + err)
             return null;
         }
         
     }
 }
 
-class newsIOstrategy implements RssSourcingStrategy{
-    async sourceFeed(url:any):Promise<Object |null>{
-        return null
+export class newsIOstrategy implements RssSourcingStrategy{
+
+    async sourceFeed(url:any):Promise<Media |null>{
+
+        try {
+            return null
+            
+        } catch (err) {
+            throw new Error("Error in newsIOStrategy: " + err);
+        }
+       
     }
 
 }
 
-class rssAppStrategy implements RssSourcingStrategy{
-    async sourceFeed(url:any):Promise<Object |null>{
-        return null
+export class rssAppStrategy implements RssSourcingStrategy{
+    async sourceFeed(url:any):Promise<Media |null>{
+
+        try{
+            const feed = await getRssFeed(url)
+            console.log(feed)
+
+            return null
+        }catch(err){
+            throw new Error("Error in rssAppStrategy: " + err)
+
+        }
+      
     }
 }

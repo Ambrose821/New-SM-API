@@ -1,5 +1,5 @@
 import { Schema, model } from "mongoose";
-import Media from "../types";
+import {Media} from "../types";
 
 const rawMediSchema = new Schema<Media>({
     headline:{

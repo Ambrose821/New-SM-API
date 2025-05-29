@@ -1,16 +1,19 @@
-import Media from "../../types";
+import {Media} from "../../types";
 import RawMedia from '../../models/rawMedia'
 import { raw } from "express";
 
-export async function saveRawMedia(rawMedia: Media): Promise<Media| Error> {
-    try{
-        const rawMediaDoc = new RawMedia(rawMedia);
-        await rawMediaDoc.save()
 
-        return rawMediaDoc
+//COMMENTED OUT THIS FUNCTION BECAUSE SAVING THE RAW MEDIA COULD LEAD TO COPYRIGHT ISSUES
+// export async function saveRawMedia(rawMedia: Media): Promise<Media| Error> {
+//     try{
+//         //console.log("Raw Media ", rawMedia)
+//         const rawMediaDoc = new RawMedia(rawMedia);
+//         await rawMediaDoc.save()
 
-    }catch(err){
-        console.error("Error saving Raw Media to mongodb: ",err)
-        throw new Error("Error Saving Raw Media to mongodb: " + err)
-    }
-}
+//         return rawMediaDoc
+
+//     }catch(err){
+//        // console.error("Error saving Raw Media to mongodb: ",err)
+//         throw new Error("Error Saving Raw Media to mongodb: " + err)
+//     }
+// }

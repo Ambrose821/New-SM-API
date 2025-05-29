@@ -20,11 +20,13 @@
   },
   "homepage": "https://github.com/Ambrose821/New-SM-API#readme",
   "dependencies": {
+    "@google/genai": "^1.2.0",
     "@types/mongodb": "^4.0.6",
     "cookie-parser": "^1.4.7",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "express-session": "^1.18.1",
+    "mime": "^4.0.7",
     "mongodb": "^6.16.0",
     "mongoose": "^8.14.2",
     "morgan": "^1.10.0",
@@ -37,7 +39,7 @@
     "@types/express": "^5.0.1",
     "@types/express-session": "^1.18.1",
     "@types/morgan": "^1.9.9",
-    "@types/node": "^22.14.1",
+    "@types/node": "^22.15.24",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   }

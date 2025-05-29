@@ -1,4 +1,4 @@
-export default interface Media{
+export interface Media{
     headline: String,
     textSnippet: String,
     sourceURL: String,
@@ -10,6 +10,11 @@ export default interface Media{
     creditTo:String
 }
 
-export default interface Post{
+export interface Post{
 
+}
+export interface NewsContent{
+headline: String,
+summary: String,
+keywords: String[],
 }

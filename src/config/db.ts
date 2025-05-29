@@ -1,4 +1,5 @@
-const mongoose = require('mongodb')
+const mongoose = require('mongoose')
+import dotenv from 'dotenv'
 
 export default async function connectDB(){
   try {
