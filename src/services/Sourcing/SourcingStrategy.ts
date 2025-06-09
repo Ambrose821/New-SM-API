@@ -1,5 +1,5 @@
 import {getRssFeed} from '../Sourcing/rssHelper/fetchFeed'
-import {Media} from '../../types';
+import {Media,Genre} from '../../types';
 
 
 
@@ -13,11 +13,11 @@ import {Media} from '../../types';
  * 
  * **/
 export interface RssSourcingStrategy {
-    sourceFeed(url:any):Promise<Media |null>;
+    sourceFeed(url:any,genre:Genre[]):Promise<Media[] |null>;
 }
 
 export class nineStrategy implements RssSourcingStrategy{
-    async sourceFeed(url:any):Promise<Media |null>{
+    async sourceFeed(url:any,genres:Genre[]):Promise<Media[] |null>{
         try{
             
             const feedItems = await getRssFeed(url)
@@ -36,7 +36,7 @@ export class nineStrategy implements RssSourcingStrategy{
 
 export class newsIOstrategy implements RssSourcingStrategy{
 
-    async sourceFeed(url:any):Promise<Media |null>{
+    async sourceFeed(url:any,genres:Genre[]):Promise<Media[] |null>{
 
         try {
             return null
@@ -50,13 +50,30 @@ export class newsIOstrategy implements RssSourcingStrategy{
 }
 
 export class rssAppStrategy implements RssSourcingStrategy{
-    async sourceFeed(url:any):Promise<Media |null>{
+    async sourceFeed(url:any,genres:Genre[]):Promise<Media[] |null>{
 
         try{
             const feed = await getRssFeed(url)
-            console.log(feed)
-
-            return null
+           //console.log(feed)
+            const mediaObjects = feed.map((feedItem:any) =>{
+                 const mediaObj: Media =
+                    {
+                    headline:feedItem.title,
+                    textSnippet:feedItem.contentSnippet,
+                    sourceURL:feedItem.link,
+                    imageURL:null,
+                    videoURL:null,
+                    genre:genres,
+                    sourcedAt:new Date(Date.now()),
+                    sourceName:feedItem.creator,
+                    creditTo: feedItem.creator + "\n"+ feed.link
+                }
+                return mediaObj
+                
+            }
+            
+        )
+        return mediaObjects;
         }catch(err){
             throw new Error("Error in rssAppStrategy: " + err)
 

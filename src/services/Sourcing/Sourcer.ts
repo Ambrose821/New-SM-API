@@ -1,5 +1,5 @@
 import {RssSourcingStrategy} from './SourcingStrategy'
-import {Media} from '../../types'
+import {Media,Genre} from '../../types'
 
 
 //Context class for the Sourcing strategy
@@ -10,10 +10,10 @@ export default class Sourcer{
         this.sourcingStrategy = sourcingStrategy;
     }
 
-    public async source(url: string): Promise<Media|null>{
+    public async source(url: string,genres: Genre[]): Promise<Media []|null>{
         try{
-            const newMedia =  await this.sourcingStrategy.sourceFeed(url);
-            return newMedia; 
+            const newMediaArr =  await this.sourcingStrategy.sourceFeed(url,genres);
+            return newMediaArr; 
 
         }catch(err){
             throw new Error("Error in Sourcer: " + err)

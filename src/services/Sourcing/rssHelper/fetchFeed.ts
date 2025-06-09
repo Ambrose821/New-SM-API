@@ -1,7 +1,7 @@
 import RssParser from 'rss-parser'
 
 
-export async function getRssFeed(url: string): Promise<Object|null> {
+export async function getRssFeed(url: string): Promise<any|null> {
     const parser = new RssParser();
     try{
         const feed = await parser.parseURL(url)

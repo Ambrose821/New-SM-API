@@ -92,7 +92,7 @@ testAINews()
 
 
 //Test pipeline
-const runner = new PipelineRunner(new Sourcer(new rssAppStrategy()),'https://rss.app/feeds/3k3JW6Z2hkoZKKtK.xml');
+const runner = new PipelineRunner(new Sourcer(new rssAppStrategy()),'https://rss.app/feeds/t7zYcTG5LJcM1F0c.xml',['crypto']);
 
 async function test(){
   try{
@@ -102,7 +102,7 @@ async function test(){
     }
 }
 
-//test()
+test()
 
 
 
