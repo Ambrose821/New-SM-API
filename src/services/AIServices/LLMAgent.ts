@@ -1,3 +1,4 @@
+import { json } from "stream/consumers";
 import { NewsContent } from "../../types";
 
 import {
@@ -40,7 +41,7 @@ export class GeminiLLMAgent implements LLMAgent {
                     },
                     keywords: {
                     type: Type.ARRAY,
-                    description: "2-3 single-word search terms for Openverse image search that prioritize *named entities or visually central subjects* from the article (e.g., people, places, institutions), followed by major themes. Avoid overgeneralized terms. Keywords must be useful for finding visually relevant public domain images that clearly connect to the post topic. If you cannot complete the request, respond only with 'NULL'",
+                    description: "2-3 single-word search terms for Openverse image search that prioritize *named entities or visually central subjects* from the article (e.g., people, places, institutions), followed by major themes. Avoid overgeneralized terms. Keywords must be useful for finding visually relevant public domain images that clearly connect to the post topic.Never provide more than 3 words. If you cannot complete the request, respond only with 'NULL'",
                     items: {
                         type: Type.STRING,
                     },
@@ -49,7 +50,7 @@ export class GeminiLLMAgent implements LLMAgent {
                 },
             };
 
-            const model = 'gemini-1.5-flash';
+            const model = 'gemini-2.0-flash-lite';
             const contents = [
                 {
                 role: 'user',
@@ -77,14 +78,35 @@ export class GeminiLLMAgent implements LLMAgent {
             //console.log(jsonRes)
 
             const newsContent = jsonRes as NewsContent
+            console.log("input: ", inputText)
             console.log(newsContent)
             
             return newsContent
             
-        } catch (error) {
-            throw new Error("Error in GeminiLLMAgent: " +error)
-            
+        } catch (error: any) {
+                
+             console.error("Error with gemini api call generate_text_and_headline_short():", error);
+
+    // Check for 429 or quota error
+    const isRateLimitError = error?.status === 429 ||
+                             error?.code === 429 ||
+                             (typeof error?.message === 'string' && 
+                              (error.message.includes('RESOURCE_EXHAUSTED') || 
+                               error.message.includes('quota') || 
+                               error.message.includes('429')));
+
+    if (isRateLimitError) {
+        console.log("======================================================================");
+        console.error("Gemini rate limiting or quota error. Waiting 60 seconds then continuing");
+        await new Promise((p) => setTimeout(p, 60000));
+        return this.generateNewsContent(inputText);
+    }else{
+        throw new Error("Error in GeminiLLMAgent: " + error);  
         }
+    }
+
+  
+    
     }
 
     

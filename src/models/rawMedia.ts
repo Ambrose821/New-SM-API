@@ -1,6 +1,10 @@
 import { Schema, model } from "mongoose";
 import {Media} from "../types";
 
+
+
+
+//DONT USE THIS MODEL
 const rawMediSchema = new Schema<Media>({
     headline:{
         type: String,

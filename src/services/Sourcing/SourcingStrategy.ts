@@ -54,7 +54,7 @@ export class rssAppStrategy implements RssSourcingStrategy{
 
         try{
             const feed = await getRssFeed(url)
-           //console.log(feed)
+           console.log(feed)
             const mediaObjects = feed.map((feedItem:any) =>{
                  const mediaObj: Media =
                     {
@@ -66,8 +66,9 @@ export class rssAppStrategy implements RssSourcingStrategy{
                     genre:genres,
                     sourcedAt:new Date(Date.now()),
                     sourceName:feedItem.creator,
-                    creditTo: feedItem.creator + "\n"+ feed.link
+                    creditTo: `${feedItem.creator}\n${feedItem.link}`
                 }
+               
                 return mediaObj
                 
             }

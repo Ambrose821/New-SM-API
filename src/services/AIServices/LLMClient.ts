@@ -11,6 +11,7 @@ export class LLMClient {
     public async generateNewsContent(inputText: string): Promise<NewsContent|null> {
         
         try{
+            //console.log("input: ", inputText)
             const newsContent = await this.LLMAgent.generateNewsContent(inputText);
             return null;
         }catch(error){

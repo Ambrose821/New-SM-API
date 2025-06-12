@@ -26,16 +26,38 @@ export default class PipelineRunner{
     public async runPipeline(){
         try{
         //fetch feed
-        const mediaObj = await this.sourcer.source(this.sourceURL,this.genres);
-        console.log(mediaObj)
-
-        const llmCli = new LLMClient(new GeminiLLMAgent());
-
+        const mediaObjArr :Media[]|null = await this.sourcer.source(this.sourceURL,this.genres);
+        //console.log(mediaObjArr)
+        if(!mediaObjArr){
+            throw new Error('Error in runPipeline: mediaObjArr is undefined')
+        }
+        
+        await Promise.all(
+            mediaObjArr.map(media => this.perMediaPipeline(media))
+        )
+       
 
         }catch(err){
             console.log("pipelineRunner Error: ", err);
             throw new Error("Error in pipelineRunner runPipeline(): " + err);
         }
+
+    }
+
+
+    public async perMediaPipeline(mediaObj: Media){
+
+        try {
+            const llmCli = new LLMClient(new GeminiLLMAgent());
+
+            const promptStr = mediaObj.headline + " " + mediaObj.textSnippet;
+            const newsContent = await llmCli.generateNewsContent(promptStr)
+            //console.log(newsContent)
+
+        } catch (error) {
+            throw new Error("Error in pipelineRunner perMediaPipeline(): " + error)
+        }
+
 
     }
         
