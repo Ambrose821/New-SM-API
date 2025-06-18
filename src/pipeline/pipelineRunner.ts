@@ -4,6 +4,7 @@ import Sourcer from "../services/Sourcing/Sourcer";
 
 import { LLMAgent,GeminiLLMAgent } from '../services/AIServices/LLMAgent'
 import { LLMClient } from '../services/AIServices/LLMClient'
+import { OpenverseClient } from "../services/ImageSource/openVerseClient";
 
 
 /*
@@ -26,6 +27,7 @@ export default class PipelineRunner{
     public async runPipeline(){
         try{
         //fetch feed
+       
         const mediaObjArr :Media[]|null = await this.sourcer.source(this.sourceURL,this.genres);
         //console.log(mediaObjArr)
         if(!mediaObjArr){
@@ -48,11 +50,18 @@ export default class PipelineRunner{
     public async perMediaPipeline(mediaObj: Media){
 
         try {
+
             const llmCli = new LLMClient(new GeminiLLMAgent());
 
             const promptStr = mediaObj.headline + " " + mediaObj.textSnippet;
             const newsContent = await llmCli.generateNewsContent(promptStr)
-            //console.log(newsContent)
+            
+            
+            const keywords = newsContent?.keywords;
+           
+            const openverseCli = new OpenverseClient()
+            const imageData = await openverseCli.getImagesFromKeyWords(1,keywords as string[])
+            console.log(newsContent)
 
         } catch (error) {
             throw new Error("Error in pipelineRunner perMediaPipeline(): " + error)

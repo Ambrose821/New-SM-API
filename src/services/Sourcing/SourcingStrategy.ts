@@ -54,7 +54,7 @@ export class rssAppStrategy implements RssSourcingStrategy{
 
         try{
             const feed = await getRssFeed(url)
-           console.log(feed)
+          // console.log(feed)
             const mediaObjects = feed.map((feedItem:any) =>{
                  const mediaObj: Media =
                     {

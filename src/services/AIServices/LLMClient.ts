@@ -13,7 +13,7 @@ export class LLMClient {
         try{
             //console.log("input: ", inputText)
             const newsContent = await this.LLMAgent.generateNewsContent(inputText);
-            return null;
+            return newsContent;
         }catch(error){
             throw new Error("Error in LLMClient at generateNewsContent(): " +error);
         }

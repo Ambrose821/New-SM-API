@@ -14,9 +14,24 @@ import PipelineRunner from './pipeline/pipelineRunner'
 import Sourcer from './services/Sourcing/Sourcer'
 import pLimit from 'p-limit'
 
+//Openverse token Handling
+
+
 
 //Environment Variables
 dotenv.config({path: '.env'})
+
+
+import { OpenverseTokenHandler } from './services/ImageSource/openVerseAuth'
+
+//May be overkill but guaruntees we have a token scheduled and in the instance
+async function openverseSetup(){
+  const tokenHandler = OpenverseTokenHandler.getInstance();
+  const token = await tokenHandler.requestAndSetToken();
+  tokenHandler.scheduleTokenRefresh();
+}
+openverseSetup()
+
 
 
 connectDB()
@@ -66,25 +81,8 @@ import { LLMAgent,GeminiLLMAgent } from './services/AIServices/LLMAgent'
 import { LLMClient } from './services/AIServices/LLMClient'
 
 
-async function testAINews(){
-  try {
-     const llmCli = new LLMClient(new GeminiLLMAgent());
-  await llmCli.generateNewsContent("Hong Kong finance chief says tariff ruling will bring Trump \"to reason\"From CNN’s Jessie Yeung Just hours after a US federal court blocked President Donald Trump from imposing most of his tariffs, Hong Kong’s financial secretary appeared to praise the move.Asked how countries and companies will react to the court ruling, with uncertainty swirling as the Trump administration appeals, Paul Chan said the decision would “at least bring President Trump to reason,” Reuters reported.Although Hong Kong is a semi-autonomous Chinese city long known as an international trade hub, it has been caught in the crossfire of the US-China trade war.")
-    
-  } catch (error) {
-   
-    console.log("Error: " +error)
-  }
- 
-}
-
-try{
 
 
-testAINews()
-}catch(error){
-  console.error("testAINews() Error: " ,error)
-}
 
 //Connect to Mongo
 //console.log(process.env.MONGO_URI)
@@ -92,11 +90,18 @@ testAINews()
 
 
 //Test pipeline
-const runner = new PipelineRunner(new Sourcer(new rssAppStrategy()),'https://rss.app/feeds/t7zYcTG5LJcM1F0c.xml',['crypto']);
+const runner = new PipelineRunner(new Sourcer(new rssAppStrategy()),'https://rss.app/feeds/tmOEuxn2W4E8x9fv.xml',['politics']);
+
+import { OpenverseClient } from './services/ImageSource/openVerseClient'
+
 
 async function test(){
   try{
+    // const string = await OpenverseTokenHandler.getInstance().getCurrentAccessToken();
+    // console.log(string)
     await runner.runPipeline()
+    // const cli = new OpenverseClient();
+    // const imageData = await cli.getImagesFromKeyWords(1, ['trump','russia'])
     }catch(err){
       console.log("Test pipeline error: ",err)
     }

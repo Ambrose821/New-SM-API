@@ -41,7 +41,7 @@ export class GeminiLLMAgent implements LLMAgent {
                     },
                     keywords: {
                     type: Type.ARRAY,
-                    description: "2-3 single-word search terms for Openverse image search that prioritize *named entities or visually central subjects* from the article (e.g., people, places, institutions), followed by major themes. Avoid overgeneralized terms. Keywords must be useful for finding visually relevant public domain images that clearly connect to the post topic.Never provide more than 3 words. If you cannot complete the request, respond only with 'NULL'",
+                    description: "2 search terms for Openverse image search that prioritize the main subjects from the article (e.g., people, places, institutions). Search Terms must be useful for finding visually relevant public domain images that clearly connect to the post topic.Never provide more than 2 words. If you cannot complete the request, respond only with 'NULL'",
                     items: {
                         type: Type.STRING,
                     },
@@ -50,7 +50,7 @@ export class GeminiLLMAgent implements LLMAgent {
                 },
             };
 
-            const model = 'gemini-2.0-flash-lite';
+            const model = 'gemini-2.0-flash';
             const contents = [
                 {
                 role: 'user',
@@ -78,8 +78,8 @@ export class GeminiLLMAgent implements LLMAgent {
             //console.log(jsonRes)
 
             const newsContent = jsonRes as NewsContent
-            console.log("input: ", inputText)
-            console.log(newsContent)
+            // console.log("input: ", inputText)
+            // console.log(newsContent)
             
             return newsContent
             
