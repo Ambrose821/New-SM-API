@@ -20,3 +20,9 @@ headline: String,
 summary: String,
 keywords: String[],
 }
+
+export interface ImageData{
+    url: String,
+    attribution:String |null
+
+}

@@ -58,10 +58,20 @@ export default class PipelineRunner{
             
             
             const keywords = newsContent?.keywords;
+            if(!keywords){
+                throw new Error("Error in pipelineRunner: AI Agent di not generate any keywords")
+            }
            
             const openverseCli = new OpenverseClient()
-            const imageData = await openverseCli.getImagesFromKeyWords(1,keywords as string[])
-            console.log(newsContent)
+            const imageDataArr = await Promise.all(
+            keywords.map(async (word) => {
+                return await openverseCli.getImagesFromKeyWord(1, word as string);
+            })
+            );
+          console.log("------------------------------------------------------------------");
+          console.log(newsContent)
+          console.log(imageDataArr)
+          console.log("------------------------------------------------------------------")
 
         } catch (error) {
             throw new Error("Error in pipelineRunner perMediaPipeline(): " + error)

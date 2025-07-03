@@ -3,7 +3,7 @@ import { KeyObject } from "crypto";
 import { todo } from "node:test";
 import qs from "qs";
 import { OpenverseTokenHandler } from "./openVerseAuth";
-
+import { ImageData } from "../../types";
 
 //For getting public Domain and creative commons images from the openverse API,
 //See API spec here https://api.openverse.org/v1/#tag/images/operation/images_detail
@@ -47,11 +47,10 @@ export class OpenverseClient{
 
     }
 
-    public async getImagesFromKeyWords(quantity: number = 1,keywords: string[] ){
+    public async getImagesFromKeyWord(quantity: number = 1,keywords: string ): Promise<ImageData | null> {
    
-        let queryStr = this.generateQueryString(keywords)
-        queryStr=encodeURI(queryStr)
-        const url = `https://api.openverse.org/v1/images/?q=${queryStr}&license=pdm,cc0,by,by-sa&categories=photograph&page_size=1&page=1`
+     
+        const url = `https://api.openverse.org/v1/images/?q=${keywords}&license=pdm,cc0,by,by-sa&categories=photograph&page_size=1&page=1`
         console.log(url)
         const currentAccessToken = await OpenverseTokenHandler.getInstance().getCurrentAccessToken()
 
@@ -63,9 +62,15 @@ export class OpenverseClient{
             }
             
         })
-        console.log("=================================="+ keywords + "\n")
-        console.log(response.data)
-        console.log("==================================\n")
+        if(response.data.results?.[0].url && response.data.results?.[0].attribution){
+            return {
+                url: response.data.results?.[0].url,
+                attribution: response.data.results?.[0].attribution
+            } as ImageData
+        }else{
+            return null;
+        }
+
         
 
     }
