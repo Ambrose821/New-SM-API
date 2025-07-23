@@ -105,17 +105,20 @@ def get_dynamic_font_size(text: str) -> int:
     Meant for short, impactful captions like reels/posts.
     """
     length = len(text.strip())
+    print("==============================")
+    print(str(length))
+    print("==============================")
 
     if length <= 40:
-        return 96   # Large font for short, bold headlines
+        return 108   # Large font for short, bold headlines
     elif length <= 80:
-        return 84   # Slightly smaller
+        return 96  # Slightly smaller
     elif length <= 120:
-        return 72   # Good balance for mid-size lines
+        return 84  # Good balance for mid-size lines
     elif length <= 160:
-        return 60   # For longer, but still scannable content
+        return 72   # For longer, but still scannable content
     else:
-        return 48   # Use small font for very long text
+        return 64   # Use small font for very long text
     
 def wrap_text_advanced(text, font, max_width, highlight_words=None):
     """Wrap text to fit within specified width with word highlighting."""
@@ -146,7 +149,7 @@ def wrap_text_advanced(text, font, max_width, highlight_words=None):
     return lines
 
 
-def process_images(bg_url, fg_url, caption):
+def process_images(bg_url, fg_url, caption,highlight_words,category_text=""):
     """Process and combine images with caption for vertical video."""
     # Download images
     bg_data = download_asset(bg_url, "background image")
@@ -211,7 +214,7 @@ def process_images(bg_url, fg_url, caption):
     
     # Category tag (like "TECH" in the example)
     category_font = get_font(32, bold=True)
-    category_text = "TECH"
+   
     category_padding = 20
     
     # Calculate category box size
@@ -225,7 +228,10 @@ def process_images(bg_url, fg_url, caption):
     
     # Draw category text
     category_x = 40 + category_padding
-    category_y = 40 + category_padding // 2
+
+    # Vertically center text in rectangle
+    text_height = category_bbox[3] - category_bbox[1]
+    category_y = 40 + (category_height - text_height) //6
     draw.text((category_x, category_y), category_text, font=category_font, fill=(0, 0, 0, 255))
     
     # Add brand name in upper right
@@ -240,10 +246,6 @@ def process_images(bg_url, fg_url, caption):
     # Process caption with highlighting
     font_size = get_dynamic_font_size(caption)
     main_font = get_font(font_size, bold=True)
-   
-    
-    # Define highlight words (you can customize this)
-    highlight_words = ["CHATGPT", "ROGUE", "LIED"]
     
     # Wrap text to fit width with padding
     max_text_width = target_width - 80  # 40px padding on each side
@@ -371,7 +373,9 @@ def main():
     print("==================================================")
     bg_url = 'https://pixabay.com/get/gc4347d31969cbaee1fc924d32a9ba15b352f307d24b4a237a7e6af3f20f9730a1cdd16ce12adb6f3de142e514e23806a64e715f9d368345fe3e205110b0e5353_1280.jpg'
     fg_url = 'https://live.staticflickr.com/4172/33486317334_185fc13b3c_b.jpg'
-    caption = "Musk's Political Comeback: Will He Shake Up Washington Again?"
+    caption = "Musk's Political Comeback"
+    highlight_words = ['Musk','Political','Washington']
+    category_text = "TECH"
     audio_url = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
    
     print(f"Background URL: {bg_url}")
@@ -383,7 +387,7 @@ def main():
     
     # Process images
     print("Processing images...")
-    final_image = process_images(bg_url, fg_url, caption)
+    final_image = process_images(bg_url, fg_url, caption,highlight_words,category_text)
     
     if final_image is None:
         print("Failed to process images")
