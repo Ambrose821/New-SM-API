@@ -62,8 +62,15 @@ def create_gradient_overlay(width, height, gradient_height=800):
 def get_font(size=32, bold=False):
     """Get a readable font, fallback to default if not available."""
     font_paths = []
-    
+   
+    try:
+        if os.path.exists("fonts/Anton-Regular.ttf"):
+            return ImageFont.truetype("fonts/Anton-Regular.ttf", size)
+    except Exception as e:
+        print(f"Failed to load custom font at {"fonts/Anton-Regular.ttf"}: {e}")
+
     if bold:
+
         font_paths = [
             "/System/Library/Fonts/Helvetica.ttc",  # macOS
             "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",  # Linux Bold
@@ -92,6 +99,24 @@ def get_font(size=32, bold=False):
         return ImageFont.load_default()
 
 
+def get_dynamic_font_size(text: str) -> int:
+    """
+    Decide font size based on length of text.
+    Meant for short, impactful captions like reels/posts.
+    """
+    length = len(text.strip())
+
+    if length <= 40:
+        return 96   # Large font for short, bold headlines
+    elif length <= 80:
+        return 84   # Slightly smaller
+    elif length <= 120:
+        return 72   # Good balance for mid-size lines
+    elif length <= 160:
+        return 60   # For longer, but still scannable content
+    else:
+        return 48   # Use small font for very long text
+    
 def wrap_text_advanced(text, font, max_width, highlight_words=None):
     """Wrap text to fit within specified width with word highlighting."""
     if highlight_words is None:
@@ -213,7 +238,9 @@ def process_images(bg_url, fg_url, caption):
     draw.text((brand_x, brand_y), brand_text, font=brand_font, fill=(255, 255, 255, 255))
     
     # Process caption with highlighting
-    main_font = get_font(84, bold=True)
+    font_size = get_dynamic_font_size(caption)
+    main_font = get_font(font_size, bold=True)
+   
     
     # Define highlight words (you can customize this)
     highlight_words = ["CHATGPT", "ROGUE", "LIED"]
@@ -342,9 +369,9 @@ def main():
     """Main function to orchestrate the video creation process."""
     print("Video Creator Script - Instagram Reel/TikTok Format")
     print("==================================================")
-    bg_url = 'https://pixabay.com/get/gaa81732f0909575c2ce195dad4ad4347c90ef2c9a0f95431e09921fbf0719f32bfc1e4de99689b1aef28a837ff9ed3dd14fda159aa448032423654a3a9eb10ff_1280.jpg'
-    fg_url = 'https://live.staticflickr.com/192/470562794_2472fada41_b.jpg'
-    caption = "Poilievre's protest crackdown: Necessary reform or stifling dissent"
+    bg_url = 'https://pixabay.com/get/gc4347d31969cbaee1fc924d32a9ba15b352f307d24b4a237a7e6af3f20f9730a1cdd16ce12adb6f3de142e514e23806a64e715f9d368345fe3e205110b0e5353_1280.jpg'
+    fg_url = 'https://live.staticflickr.com/4172/33486317334_185fc13b3c_b.jpg'
+    caption = "Musk's Political Comeback: Will He Shake Up Washington Again?"
     audio_url = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
    
     print(f"Background URL: {bg_url}")
