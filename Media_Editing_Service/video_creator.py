@@ -366,17 +366,16 @@ def create_video(image, audio_url=None, duration=20):
     # Return video without audio
     return image_clip
 
-
 def main():
     """Main function to orchestrate the video creation process."""
     print("Video Creator Script - Instagram Reel/TikTok Format")
     print("==================================================")
-    bg_url = 'https://pixabay.com/get/gc4347d31969cbaee1fc924d32a9ba15b352f307d24b4a237a7e6af3f20f9730a1cdd16ce12adb6f3de142e514e23806a64e715f9d368345fe3e205110b0e5353_1280.jpg'
-    fg_url = 'https://live.staticflickr.com/4172/33486317334_185fc13b3c_b.jpg'
-    caption = "Musk's Political Comeback"
+    bg_url = 'https://pixabay.com/get/gcf2d9069e1a084627ba85aa65fdfcf310fb26ab9d43db8a5f0aa30f131ce6f2fdc0cfd25185a5a15e05ae76e16fa58ace948f6d3153bc552a571ff46e9733297_1280.jpg'
+    fg_url = 'https://upload.wikimedia.org/wikipedia/commons/6/64/Pierre_Poilievre_in_2023_%28edited%29.jpg'
+    caption = "Is electoral reform the answer to crowded ballots? 🤔 Alberta by-election sparks debate!"
     highlight_words = ['Musk','Political','Washington']
     category_text = "TECH"
-    audio_url = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
+    audio_url = 'https://mediaapibucket.s3.us-east-1.amazonaws.com/SoundHelix-Song-1.mp3'
    
     print(f"Background URL: {bg_url}")
     print(f"Foreground URL: {fg_url}")
