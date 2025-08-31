@@ -5,6 +5,14 @@ from pathlib import Path
 from playwright.sync_api import sync_playwright
 import re, subprocess
 
+import boto3
+import time
+
+import os
+from dotenv import load_dotenv
+
+load_dotenv() # This loads the variables from the .env file
+
 def highlight_words(caption:str, words:list[str]) -> str:
     # wrap matched words in <b> for yellow highlight
     def repl(m): return f"<b>{m.group(0)}</b>"
@@ -59,11 +67,97 @@ def still_to_video(image_bytes, audio_path=None, out_mp4="post.mp4", duration=20
         cmd += ["-c:v", "libx264", "-pix_fmt", "yuv420p", "-r", "30", out_mp4]
     subprocess.run(cmd, check=True,input = image_bytes)
 
+
+def still_to_video_s3(
+    image_png_bytes: bytes,
+    bucket: str, key: str,
+    audio_path: str | None = None,
+    duration: int = 20, fps: int = 30, crf: int = 20, preset: str = "medium",
+):
+    assert isinstance(image_png_bytes, (bytes, bytearray)), "Pass PNG bytes, not a path string."
+
+    cmd = [
+        "ffmpeg", "-nostdin", "-loglevel", "error", "-y",
+        "-f", "png_pipe", "-loop", "1", "-t", str(duration),
+        "-i", "pipe:0",
+    ]
+    if audio_path:
+        cmd += ["-stream_loop", "-1", "-i", audio_path, "-shortest"]
+
+    cmd += [
+        "-r", str(fps),
+        "-c:v", "libx264", "-crf", str(crf), "-preset", preset,
+        "-pix_fmt", "yuv420p",
+    ]
+    if audio_path:
+        cmd += ["-c:a", "aac", "-b:a", "128k"]
+
+    cmd += ["-movflags", "+frag_keyframe+empty_moov", "-f", "mp4", "pipe:1"]
+
+    proc = subprocess.Popen(
+        cmd,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        bufsize=0,
+    )
+
+    # 1) FEED INPUT FIRST so ffmpeg can start producing stdout
+    try:
+        proc.stdin.write(image_png_bytes)
+        proc.stdin.close()
+    except Exception:
+        # ensure the process won’t try to flush a closed stdin later
+        try: proc.stdin.close()
+        except: pass
+        proc.stdin = None
+        raise
+
+    # 2) STREAM stdout to S3 while ffmpeg encodes
+    s3 = boto3.client(
+        "s3",
+        aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+        aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+        aws_session_token=os.getenv("AWS_SESSION_TOKEN"),
+        region_name=os.getenv("AWS_DEFAULT_REGION") or os.getenv("AWS_REGION"),
+    )
+
+    try:
+        s3.upload_fileobj(
+            proc.stdout, Bucket=bucket, Key=key,
+            ExtraArgs={"ContentType": "video/mp4"}
+        )
+    finally:
+        # 3) Finalize: drain stderr (for errors) and wait for exit
+        # (Don’t use communicate(input=...) — we already wrote stdin)
+        try:
+            err = proc.stderr.read()  # small because -loglevel error
+        except Exception:
+            err = b""
+        rc = proc.wait(timeout=60)  # optional timeout
+        if rc != 0:
+            msg = err.decode("utf-8", errors="ignore") or "ffmpeg failed"
+            raise RuntimeError(f"ffmpeg exited {rc}: {msg}")
+        try:
+            if proc.stdout and not proc.stdout.closed: proc.stdout.close()
+        except Exception:
+            pass
+        try:
+            if proc.stderr and not proc.stderr.closed: proc.stderr.close()
+        except Exception:
+            pass
+
+   
+
+    return f'https://{bucket}.s3.{os.getenv("AWS_DEFAULT_REGION")}.amazonaws.com/{key}'
+
+
+
 if __name__ == "__main__":
     # >>> Edit your variables here (just like your no-args style) <<<
     bg_url = "https://pixabay.com/get/g5379ab3e42ad4d8311dc8bf1406ebda8a87bac04a677de5a5507a1dfab920647a4b8857f723e8cd2d12224d8d7e20e1c608db5c8fb2645ce1fb842f828a08b83_1280.jpg"
     fg_url = "https://live.staticflickr.com/5810/21134663472_c11bc28666_b.jpg"
-    caption = "Trump's Alive? Golf Outing Shuts Down Death Rumors!s"
+    caption = "Trump's Alive? Golf Outing Shuts Down Death Rumors!"
     highlight = ["TRUMP", "DEATH"]
     category = "Politics"
     brand    = "Urba"
@@ -71,6 +165,7 @@ if __name__ == "__main__":
     cta_text = "READ CAPTION FOR DETAILS"
     audio    = "audio.mp3"  # or None
 
-    out_png = make_image(bg_url, fg_url, caption, highlight, category, brand, size, cta_text, out_png="post.png")
-    # Optional video:
-    still_to_video(out_png, audio_path=audio, out_mp4="post.mp4", duration=20)
+    out_png_bytes = make_image(bg_url, fg_url, caption, highlight, category, brand, size, cta_text, out_png="post.png")
+
+    out_url = still_to_video_s3(out_png_bytes,"mediaapibucket",f"posts/{time.time()*1000}/post.mp4",audio_path=audio,duration=20,fps=30,crf=20,preset="medium")
+    print(out_url)
