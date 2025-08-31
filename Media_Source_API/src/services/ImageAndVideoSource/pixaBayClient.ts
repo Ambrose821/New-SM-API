@@ -14,7 +14,7 @@ export default class PixabayClient{
      public async getImagesFromKeyWord(quantity: number = 1,keyword: string ): Promise<ImageData | null> {
       
         keyword=encodeURI(keyword)
-        const url = `https://pixabay.com/api/?key=${process.env.PIXPAY_API_KEY}&q=${keyword}&image_type=photo&order=latest`
+        const url = `https://pixabay.com/api/?key=${process.env.PIXPAY_API_KEY}&q=${keyword}&image_type=photo&order=popular`
         console.log(url)
 
       
@@ -29,7 +29,7 @@ export default class PixabayClient{
           } as ImageData
     
             console.log("====================================================== Large Image URL ===============================================================")
-            console.log(img_data)
+            console.log(img_data + "\n" +url)
             return img_data
           
         

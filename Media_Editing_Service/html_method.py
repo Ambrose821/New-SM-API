@@ -31,45 +31,46 @@ def make_image(bg_url, fg_url, caption, highlight, category, brand,
         category=category.upper(), brand=brand,
         cta_text=cta_text, font_size=fs
     )
-    Path("out.html").write_text(html, encoding="utf-8")
+   # Path("out.html").write_text(html, encoding="utf-8")
 
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page(viewport={"width": width, "height": height, "deviceScaleFactor": 1})
         page.set_content(html, wait_until="load")
         page.wait_for_timeout(250)  # small settle
-        page.screenshot(path=out_png, full_page=False)
+        png_bytes = page.screenshot(full_page=False)
+        
         browser.close()
-    return out_png
+    return png_bytes
 
-def still_to_video(image_path, audio_path=None, out_mp4="post.mp4", duration=20):
+def still_to_video(image_bytes, audio_path=None, out_mp4="post.mp4", duration=20):
     # Use ffmpeg directly for robustness
     # - loop the image, trim to duration
     # - if audio provided, loop/trim to duration and mux
     cmd = [
-        "ffmpeg", "-y",
-        "-loop", "1", "-t", str(duration),
-        "-i", image_path,
+        "ffmpeg", "-nostdin", "-loglevel", "error", "-y",
+        "-f", "png_pipe", "-loop", "1", "-t", str(duration),
+        "-i", "pipe:0",
     ]
     if audio_path:
         cmd += ["-stream_loop", "-1", "-i", audio_path, "-shortest"]
         cmd += ["-c:v", "libx264", "-pix_fmt", "yuv420p", "-r", "30", "-c:a", "aac", "-b:a", "128k", out_mp4]
     else:
         cmd += ["-c:v", "libx264", "-pix_fmt", "yuv420p", "-r", "30", out_mp4]
-    subprocess.run(cmd, check=True)
+    subprocess.run(cmd, check=True,input = image_bytes)
 
 if __name__ == "__main__":
     # >>> Edit your variables here (just like your no-args style) <<<
-    bg_url = "https://picsum.photos/1600/900"
-    fg_url = "https://upload.wikimedia.org/wikipedia/commons/6/64/Pierre_Poilievre_in_2023_%28edited%29.jpg"
-    caption = "OPENAI’S CHATGPT TRIED TOassssshdfhfhghghghghghghghghghghghghghghghghghghghghghghGO ROGUE, THEN LIED ABOUT IT"
-    highlight = ["CHATGPT", "ROGUE"]
-    category = "TECH"
+    bg_url = "https://pixabay.com/get/g5379ab3e42ad4d8311dc8bf1406ebda8a87bac04a677de5a5507a1dfab920647a4b8857f723e8cd2d12224d8d7e20e1c608db5c8fb2645ce1fb842f828a08b83_1280.jpg"
+    fg_url = "https://live.staticflickr.com/5810/21134663472_c11bc28666_b.jpg"
+    caption = "Trump's Alive? Golf Outing Shuts Down Death Rumors!s"
+    highlight = ["TRUMP", "DEATH"]
+    category = "Politics"
     brand    = "Urba"
     size     = (1080, 1920)  # or (1080,1080)
     cta_text = "READ CAPTION FOR DETAILS"
-    audio    = "SoundHelix-Song-1.mp3"  # or None
+    audio    = "audio.mp3"  # or None
 
     out_png = make_image(bg_url, fg_url, caption, highlight, category, brand, size, cta_text, out_png="post.png")
     # Optional video:
-    #still_to_video(out_png, audio_path=audio, out_mp4="post.mp4", duration=20)
+    still_to_video(out_png, audio_path=audio, out_mp4="post.mp4", duration=20)
