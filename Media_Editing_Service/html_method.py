@@ -107,6 +107,7 @@ def still_to_video(
         except OSError:
             pass
 
+import os, tempfile, subprocess, boto3
 
 def still_to_video_s3(
     image_png_bytes: bytes,
@@ -116,12 +117,20 @@ def still_to_video_s3(
 ):
     assert isinstance(image_png_bytes, (bytes, bytearray)), "Pass PNG bytes, not a path string."
 
+    # 0) Write the PNG to a temp file (no stdin piping)
+    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp_img:
+        tmp_img.write(image_png_bytes)
+        tmp_img.flush()
+        png_path = tmp_img.name
+
+    # 1) Build ffmpeg command that *reads the file* instead of pipe:0
     cmd = [
         "ffmpeg", "-nostdin", "-loglevel", "error", "-y",
-        "-f", "png_pipe", "-loop", "1", "-t", str(duration),
-        "-i", "pipe:0",
+        "-loop", "1", "-t", str(duration),   # -loop applies to the next input
+        "-i", png_path,                      # file input (temp png)
     ]
     if audio_path:
+        # Repeat audio to match duration; -shortest to stop at video end
         cmd += ["-stream_loop", "-1", "-i", audio_path, "-shortest"]
 
     cmd += [
@@ -132,64 +141,65 @@ def still_to_video_s3(
     if audio_path:
         cmd += ["-c:a", "aac", "-b:a", "128k"]
 
+    # Streamable MP4 to stdout (S3 upload_fileobj will consume this)
     cmd += ["-movflags", "+frag_keyframe+empty_moov", "-f", "mp4", "pipe:1"]
 
-    proc = subprocess.Popen(
-        cmd,
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        bufsize=0,
-    )
-
-    # 1) FEED INPUT FIRST so ffmpeg can start producing stdout
+    proc = None
     try:
-        proc.stdin.write(image_png_bytes)
-        proc.stdin.close()
-    except Exception:
-        # ensure the process won’t try to flush a closed stdin later
-        try: proc.stdin.close()
-        except: pass
-        proc.stdin = None
-        raise
+        proc = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            bufsize=0,
+        )
 
-    # 2) STREAM stdout to S3 while ffmpeg encodes
-    s3 = boto3.client(
-        "s3",
-        aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
-        aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
-        aws_session_token=os.getenv("AWS_SESSION_TOKEN"),
-        region_name=os.getenv("AWS_DEFAULT_REGION") or os.getenv("AWS_REGION"),
-    )
+        s3 = boto3.client(
+            "s3",
+            aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+            aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+            aws_session_token=os.getenv("AWS_SESSION_TOKEN"),
+            region_name=os.getenv("AWS_DEFAULT_REGION") or os.getenv("AWS_REGION"),
+        )
 
-    try:
+        # 2) Stream ffmpeg stdout directly to S3
         s3.upload_fileobj(
             proc.stdout, Bucket=bucket, Key=key,
             ExtraArgs={"ContentType": "video/mp4"}
         )
-    finally:
-        # 3) Finalize: drain stderr (for errors) and wait for exit
-        # (Don’t use communicate(input=...) — we already wrote stdin)
-        try:
-            err = proc.stderr.read()  # small because -loglevel error
-        except Exception:
-            err = b""
-        rc = proc.wait(timeout=60)  # optional timeout
+
+        # 3) Finalize: drain stderr and confirm exit code
+        err = proc.stderr.read() if proc.stderr else b""
+        rc = proc.wait(timeout=120)
         if rc != 0:
             msg = err.decode("utf-8", errors="ignore") or "ffmpeg failed"
             raise RuntimeError(f"ffmpeg exited {rc}: {msg}")
+
+    finally:
+        # close pipes
         try:
-            if proc.stdout and not proc.stdout.closed: proc.stdout.close()
+            if proc and proc.stdout and not proc.stdout.closed:
+                proc.stdout.close()
         except Exception:
             pass
         try:
-            if proc.stderr and not proc.stderr.closed: proc.stderr.close()
+            if proc and proc.stderr and not proc.stderr.closed:
+                proc.stderr.close()
+        except Exception:
+            pass
+        # remove temp image
+        try:
+            os.remove(png_path)
         except Exception:
             pass
 
-   
+    # 4) Return a public-style URL for the object path (works if the object is public or behind a CDN)
+    region = os.getenv("AWS_DEFAULT_REGION") or os.getenv("AWS_REGION") or ""
+    if region == "" or region == "us-east-1":
+        # Legacy/global endpoint for us-east-1
+        return f"https://{bucket}.s3.amazonaws.com/{key}"
+    else:
+        return f"https://{bucket}.s3.{region}.amazonaws.com/{key}"
 
-    return f'https://{bucket}.s3.{os.getenv("AWS_DEFAULT_REGION")}.amazonaws.com/{key}'
 
 
 
@@ -207,5 +217,5 @@ if __name__ == "__main__":
 
     out_png_bytes = make_image(bg_url, fg_url, caption, highlight, category, brand, size, cta_text, out_png="post.png")
     still_to_video(out_png_bytes, audio_path=audio, out_mp4="poooosted.mp4", duration=20)
-    #out_url = still_to_video_s3(out_png_bytes,"mediaapibucket",f"posts/{time.time()*1000}/post.mp4",audio_path=audio,duration=2000,fps=30,crf=20,preset="medium")
-   # print(out_url)
+    out_url = still_to_video_s3(out_png_bytes,"mediaapibucket",f"posts/{time.time()*1000}/post.mp4",audio_path=audio,duration=10,fps=30,crf=20,preset="medium")
+    print(out_url)
