@@ -1,5 +1,6 @@
 """ This is By far the best one so far"""
 
+import tempfile
 from jinja2 import Template
 from pathlib import Path
 from playwright.sync_api import sync_playwright
@@ -11,7 +12,10 @@ import time
 import os
 from dotenv import load_dotenv
 
+
 load_dotenv() # This loads the variables from the .env file
+
+TEMP_DIR = "dev/tempFiles" 
 
 def highlight_words(caption:str, words:list[str]) -> str:
     # wrap matched words in <b> for yellow highlight
@@ -52,43 +56,56 @@ def make_image(bg_url, fg_url, caption, highlight, category, brand,
     return png_bytes
 
 
+
+
 def still_to_video(
     image_bytes: bytes,
     audio_path: str | None = None,
-    out_mp4: str = "posted.mp4",
+    out_mp4: str = "posted.mp4", 
     duration: int = 20,
     fps: int = 30,
     crf: int = 20,
     preset: str = "medium",
 ):
-    cmd = [
-    "ffmpeg", "-nostdin", "-loglevel", "error", "-y",
-    "-f", "image2pipe",
-    "-vcodec", "png",
-    "-loop", "1",
-    "-i", "pipe:0",
-]
+    """
+    FIXED VERSION: Generate video from image bytes, save to local file.
+    This now works correctly with the proper duration.
+    """
+    # KEY FIX: Use temp file instead of pipe input for -loop 1 to work
+    with tempfile.NamedTemporaryFile(suffix='.png', delete=False, dir=TEMP_DIR) as tmp_file:
+        tmp_file.write(image_bytes)
+        tmp_file.flush()
+        tmp_path = tmp_file.name
 
-    if audio_path:
-     cmd += ["-stream_loop", "-1", "-i", audio_path]
+    try:
+        # Use the WORKING pattern from your file-based version
+        cmd = [
+            "ffmpeg", "-nostdin", "-loglevel", "error", "-y",
+            "-loop", "1", "-t", str(duration),  # KEY: -t BEFORE -i for proper duration
+            "-i", tmp_path,  # Use temp file instead of pipe
+        ]
 
-    cmd += [
-    "-t", str(duration),        # Output duration
-    "-r", str(fps),            # Output framerate
-    "-c:v", "libx264",
-    "-crf", str(crf),
-    "-preset", preset,
-    "-pix_fmt", "yuv420p",
-]
+        if audio_path:
+            cmd += ["-stream_loop", "-1", "-i", audio_path, "-shortest"]
 
-    if audio_path:
-        cmd += ["-c:a", "aac", "-b:a", "128k", "-shortest"]
+        cmd += [
+            "-c:v", "libx264", "-crf", str(crf), "-preset", preset,
+            "-pix_fmt", "yuv420p", "-r", str(fps),
+        ]
 
-    
+        if audio_path:
+            cmd += ["-c:a", "aac", "-b:a", "128k"]
 
-    cmd += [out_mp4]
+        cmd += [out_mp4]
 
-    subprocess.run(cmd, check=True, input=image_bytes)
+        subprocess.run(cmd, check=True)
+        
+    finally:
+        # Clean up temp file
+        try:
+            os.unlink(tmp_path)
+        except OSError:
+            pass
 
 
 def still_to_video_s3(
@@ -189,6 +206,6 @@ if __name__ == "__main__":
     audio    = "audio.mp3"  # or None
 
     out_png_bytes = make_image(bg_url, fg_url, caption, highlight, category, brand, size, cta_text, out_png="post.png")
-    still_to_video(out_png_bytes, audio_path=audio, out_mp4="poooosted.mp4", duration=200)
+    still_to_video(out_png_bytes, audio_path=audio, out_mp4="poooosted.mp4", duration=20)
     #out_url = still_to_video_s3(out_png_bytes,"mediaapibucket",f"posts/{time.time()*1000}/post.mp4",audio_path=audio,duration=2000,fps=30,crf=20,preset="medium")
    # print(out_url)
