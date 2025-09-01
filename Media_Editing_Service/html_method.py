@@ -51,21 +51,44 @@ def make_image(bg_url, fg_url, caption, highlight, category, brand,
         browser.close()
     return png_bytes
 
-def still_to_video(image_bytes, audio_path=None, out_mp4="post.mp4", duration=20):
-    # Use ffmpeg directly for robustness
-    # - loop the image, trim to duration
-    # - if audio provided, loop/trim to duration and mux
+
+def still_to_video(
+    image_bytes: bytes,
+    audio_path: str | None = None,
+    out_mp4: str = "posted.mp4",
+    duration: int = 20,
+    fps: int = 30,
+    crf: int = 20,
+    preset: str = "medium",
+):
     cmd = [
-        "ffmpeg", "-nostdin", "-loglevel", "error", "-y",
-        "-f", "png_pipe", "-loop", "1", "-t", str(duration),
-        "-i", "pipe:0",
-    ]
+    "ffmpeg", "-nostdin", "-loglevel", "error", "-y",
+    "-f", "image2pipe",
+    "-vcodec", "png",
+    "-loop", "1",
+    "-i", "pipe:0",
+]
+
     if audio_path:
-        cmd += ["-stream_loop", "-1", "-i", audio_path, "-shortest"]
-        cmd += ["-c:v", "libx264", "-pix_fmt", "yuv420p", "-r", "30", "-c:a", "aac", "-b:a", "128k", out_mp4]
-    else:
-        cmd += ["-c:v", "libx264", "-pix_fmt", "yuv420p", "-r", "30", out_mp4]
-    subprocess.run(cmd, check=True,input = image_bytes)
+     cmd += ["-stream_loop", "-1", "-i", audio_path]
+
+    cmd += [
+    "-t", str(duration),        # Output duration
+    "-r", str(fps),            # Output framerate
+    "-c:v", "libx264",
+    "-crf", str(crf),
+    "-preset", preset,
+    "-pix_fmt", "yuv420p",
+]
+
+    if audio_path:
+        cmd += ["-c:a", "aac", "-b:a", "128k", "-shortest"]
+
+    
+
+    cmd += [out_mp4]
+
+    subprocess.run(cmd, check=True, input=image_bytes)
 
 
 def still_to_video_s3(
@@ -155,7 +178,7 @@ def still_to_video_s3(
 
 if __name__ == "__main__":
     # >>> Edit your variables here (just like your no-args style) <<<
-    bg_url = "https://pixabay.com/get/g5379ab3e42ad4d8311dc8bf1406ebda8a87bac04a677de5a5507a1dfab920647a4b8857f723e8cd2d12224d8d7e20e1c608db5c8fb2645ce1fb842f828a08b83_1280.jpg"
+    bg_url = "https://pixabay.com/get/g37d01219508d9cc9acc0cdd152863f4e1f4e7388beff6203923bccb1d4aedcf1548ec9a147772865205b1165703e36d501480dad500bb1a48494a4f8a64a5778_1280.jpg"
     fg_url = "https://live.staticflickr.com/5810/21134663472_c11bc28666_b.jpg"
     caption = "Trump's Alive? Golf Outing Shuts Down Death Rumors!"
     highlight = ["TRUMP", "DEATH"]
@@ -166,6 +189,6 @@ if __name__ == "__main__":
     audio    = "audio.mp3"  # or None
 
     out_png_bytes = make_image(bg_url, fg_url, caption, highlight, category, brand, size, cta_text, out_png="post.png")
-
-    out_url = still_to_video_s3(out_png_bytes,"mediaapibucket",f"posts/{time.time()*1000}/post.mp4",audio_path=audio,duration=20,fps=30,crf=20,preset="medium")
-    print(out_url)
+    still_to_video(out_png_bytes, audio_path=audio, out_mp4="poooosted.mp4", duration=200)
+    #out_url = still_to_video_s3(out_png_bytes,"mediaapibucket",f"posts/{time.time()*1000}/post.mp4",audio_path=audio,duration=2000,fps=30,crf=20,preset="medium")
+   # print(out_url)
