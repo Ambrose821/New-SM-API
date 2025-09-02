@@ -49,7 +49,10 @@ export class GeminiLLMAgent implements LLMAgent {
                     },
                     highlightWords:{
                         type: Type.ARRAY,
-                        description:"2-5 key words and/or names from the headline you just generate above.  These should be the most impactful, relevant, or emotionally charged words or phrases from your own headline, chosen to grab a reader's attention."
+                        description:"2-5 key words and/or names from the headline you just generate above.  These should be the most impactful, relevant, or emotionally charged words or phrases from your own headline, chosen to grab a reader's attention.",
+                        items:{
+                            type: Type.STRING
+                        }
                     }
                 },
                 },
