@@ -41,9 +41,12 @@ export interface RenderRequest{
     height:number,
     duration:number
     fps:30,
+    //Debating moving the below paramters to the api reciever side of the Media Editing API
+    s3_bucket: String, //Should be "mediaapibucket" unless something changes. Debating even having this on this side of the request
+    s3_key: String, //Something like "posts/{timeLong}/post.mp4", also not sure if this should be on this side of the request 
 
-    encoder: String // Should be "libx264"
-    preset:String //Normally "medium",
+    encoder: String, // Should be "libx264"
+    preset:String, //Normally "medium",
 
 
 
