@@ -7,6 +7,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 from playwright.async_api import async_playwright
 import boto3
 from boto3.s3.transfer import TransferConfig
+from dotenv import load_dotenv
 
 
 #--- Run with uvicorn api:app --host 0.0.0.0 --port 8000 --workers 2 --loop uvloop ##
@@ -21,7 +22,7 @@ TMP_DIR        = "/dev/shm" if os.path.exists("/dev/shm") else None
 app = FastAPI()
 executor = ThreadPoolExecutor(max_workers=RENDER_WORKERS)
 sem = asyncio.Semaphore(max(1, RENDER_WORKERS))  # simple global backpressure
-
+load_dotenv() 
 jinja = Environment(loader=FileSystemLoader(TEMPLATES_DIR),
                     autoescape=select_autoescape(["html"]))
 template = jinja.get_template("post_template.html")
@@ -30,7 +31,6 @@ s3 = boto3.client(
     "s3",
     aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
     aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
-    aws_session_token=os.getenv("AWS_SESSION_TOKEN"),
     region_name=os.getenv("AWS_DEFAULT_REGION") or os.getenv("AWS_REGION"),
 )
 S3_CFG = TransferConfig(
