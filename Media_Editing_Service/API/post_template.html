@@ -6,7 +6,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@600;800&display=swap" rel="stylesheet">
   <style>
-    :root { --pad: 40px; }
+    :root { --pad: 80px; }
     * { box-sizing: border-box; }
     html, body { margin:0; }
     body {
@@ -17,26 +17,27 @@
     .bg {
       position:absolute; inset:0;
       background: url('{{ bg_url }}') center/cover no-repeat;
-      filter: blur(2px) brightness(0.85);
+      filter: blur(0.5px) brightness(0.85);
     }
-    .brand { position:absolute; top: var(--pad); right: var(--pad); color:#fff; font-weight:800; }
+    .brand { position:absolute; top: var(--pad); right: var(--pad); color:#fff; font-weight:800;font-size: 50px }
     .pill {
       position:absolute; top: var(--pad); left: var(--pad);
-      background:#fff; color:#000; padding: 12px 18px; border-radius: 12px; font-weight:800;
+      background:#fff; color:#000; padding: 18px 27px; border-radius: 12px; font-weight:800;
+      font-size: 50px
     }
     .avatar {
-      position:absolute; top: calc(var(--pad) + 40px); right: var(--pad);
-      width: 420px; height: 420px; border-radius: 50%;
+      position:absolute; top: calc(var(--pad) + 150px); right: var(--pad);
+      width: 600px; height: 600px; border-radius: 50%;
       border: 14px solid #f7ffa0; box-shadow: 0 10px 30px rgba(0,0,0,.35);
       background: url('{{ fg_url }}') center/cover no-repeat;
     }
     .gradient {
-      position:absolute; left:0; right:0; bottom:0; height: 42%;
-      background: linear-gradient(to top, rgba(0,0,0,.95), rgba(0,0,0,0));
+      position:absolute; left:0; right:0; bottom:0; height: 60%;
+      background: linear-gradient(to top, rgba(0,0,0,.95), rgba(0, 0, 0, 0.792), rgba(0, 0, 0, 0.792),rgba(0, 0, 0, 0.029),rgba(0, 0, 0, 0));
     }
     .caption {
       position:absolute; left: var(--pad); right: var(--pad);
-      bottom: calc(12% + 96px);
+      bottom: calc(12% + 128px);
       font-family: Anton, Inter, sans-serif;
       color: #fff; line-height: 1.08;
       text-shadow: 0 3px 0 rgba(0,0,0,.7);
@@ -46,7 +47,7 @@
     .caption b { color: #ffeb3b; }
     .cta {
       position:absolute; left:50%; transform: translateX(-50%);
-      bottom: 40px; background:#fff; color:#000; font-weight:800;
+      bottom: 190px; background:#fff; color:#000; font-weight:800;
       padding: 16px 26px; border-radius: 14px;
       font-size: 32px;
     }
