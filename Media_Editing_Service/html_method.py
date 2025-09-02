@@ -201,21 +201,69 @@ def still_to_video_s3(
         return f"https://{bucket}.s3.{region}.amazonaws.com/{key}"
 
 
-
+import random
 
 if __name__ == "__main__":
-    # >>> Edit your variables here (just like your no-args style) <<<
-    bg_url = "https://pixabay.com/get/g37d01219508d9cc9acc0cdd152863f4e1f4e7388beff6203923bccb1d4aedcf1548ec9a147772865205b1165703e36d501480dad500bb1a48494a4f8a64a5778_1280.jpg"
-    fg_url = "https://live.staticflickr.com/5810/21134663472_c11bc28666_b.jpg"
-    caption = "Trump's Alive? Golf Outing Shuts Down Death Rumors!"
-    highlight = ["TRUMP", "DEATH"]
-    category = "Politics"
-    brand    = "Urba"
-    size     = (1080, 1920)  # or (1080,1080)
+    # Example lists of real image URLs
+    bg_urls = [
+        "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
+        "https://pixabay.com/get/g37d01219508d9cc9acc0cdd152863f4e1f4e7388beff6203923bccb1d4aedcf1548ec9a147772865205b1165703e36d501480dad500bb1a48494a4f8a64a5778_1280.jpg",
+        "https://live.staticflickr.com/5810/21134663472_c11bc28666_b.jpg",
+        "https://images.unsplash.com/photo-1465101046530-73398c7f28ca",
+        "https://images.unsplash.com/photo-1519125323398-675f0ddb6308",
+        "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e",
+        "https://images.unsplash.com/photo-1502086223501-7ea6ecd79368",
+        "https://images.unsplash.com/photo-1465101178521-c1a6f3b5f0a7",
+        "https://images.unsplash.com/photo-1465101046530-73398c7f28ca",
+        "https://images.unsplash.com/photo-1519125323398-675f0ddb6308",
+    ]
+    fg_urls = [
+        "https://images.unsplash.com/photo-1519125323398-675f0ddb6308",
+        "https://live.staticflickr.com/5810/21134663472_c11bc28666_b.jpg",
+        "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
+        "https://pixabay.com/get/g37d01219508d9cc9acc0cdd152863f4e1f4e7388beff6203923bccb1d4aedcf1548ec9a147772865205b1165703e36d501480dad500bb1a48494a4f8a64a5778_1280.jpg",
+        "https://images.unsplash.com/photo-1465101178521-c1a6f3b5f0a7",
+        "https://images.unsplash.com/photo-1465101046530-73398c7f28ca",
+        "https://images.unsplash.com/photo-1502086223501-7ea6ecd79368",
+        "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e",
+        "https://images.unsplash.com/photo-1519125323398-675f0ddb6308",
+        "https://images.unsplash.com/photo-1465101046530-73398c7f28ca",
+    ]
+    captions = [
+        "Breaking News: Market Surges!",
+        "Crypto Hits New Highs!",
+        "AI Revolutionizes Healthcare.",
+        "SpaceX Launches New Rocket.",
+        "Climate Change: Urgent Action Needed.",
+        "Tech Giants Merge Forces.",
+        "Sports: Underdog Wins Championship!",
+        "Travel: Top Destinations for 2025.",
+        "Fashion Week Highlights.",
+        "Music Festival Rocks the City.",
+    ]
+    highlights = [["NEWS"], ["CRYPTO"], ["AI"], ["SPACEX"], ["CLIMATE"], ["TECH"], ["SPORTS"], ["TRAVEL"], ["FASHION"], ["MUSIC"]]
+    categories = ["Finance", "Tech", "Health", "Space", "Environment", "Business", "Sports", "Travel", "Fashion", "Music"]
+    brands = ["BrandA", "BrandB", "BrandC", "BrandD", "BrandE", "BrandF", "BrandG", "BrandH", "BrandI", "BrandJ"]
+    size = (1080, 1920)
     cta_text = "READ CAPTION FOR DETAILS"
-    audio    = "audio.mp3"  # or None
+    audio = "audio.mp3"
 
-    out_png_bytes = make_image(bg_url, fg_url, caption, highlight, category, brand, size, cta_text, out_png="post.png")
-    still_to_video(out_png_bytes, audio_path=audio, out_mp4="poooosted.mp4", duration=20)
-    out_url = still_to_video_s3(out_png_bytes,"mediaapibucket",f"posts/{time.time()*1000}/post.mp4",audio_path=audio,duration=10,fps=30,crf=20,preset="medium")
-    print(out_url)
+    for i in range(23):
+        bg_url = random.choice(bg_urls)
+        fg_url = random.choice(fg_urls)
+        caption = random.choice(captions)
+        highlight = random.choice(highlights)
+        category = random.choice(categories)
+        brand = random.choice(brands)
+        out_png_bytes = make_image(bg_url, fg_url, caption, highlight, category, brand, size, cta_text, out_png="post.png")
+        out_url = still_to_video_s3(
+            out_png_bytes,
+            "mediaapibucket",
+            f"posts/{int(time.time()*1000)}_{i}/post.mp4",
+            audio_path=audio,
+            duration=20,
+            fps=30,
+            crf=20,
+            preset="medium"
+        )
+        print(f"Example {i+1}: {out_url}")
