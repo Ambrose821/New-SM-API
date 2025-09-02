@@ -113,7 +113,7 @@ class RenderReq(BaseModel):
     s3_key: str
     encoder: str | None = None
     preset: str = "medium"
-    font_size: int | None = None
+   
 
 def highlight_words(caption:str, words:list[str]) -> str:
     def repl(m): return f"<b>{m.group(0)}</b>"
@@ -123,13 +123,17 @@ def highlight_words(caption:str, words:list[str]) -> str:
 
 async def render_png_bytes(req: RenderReq) -> bytes:
     cap_html = highlight_words(req.caption, req.highlight or [])
+
+    L = len(req.caption.strip())
+    fs = 110 if L<=40 else 96 if L<=80 else 84 if L<=120 else 72 if L<=160 else 62
+
     html = template.render(
         width=req.width, height=req.height,
         bg_url=req.bg_url, fg_url=req.fg_url,
         caption_html=cap_html,
         category=req.category.upper(), brand=req.brand,
         cta_text="READ CAPTION FOR DETAILS",
-        font_size=req.font_size or 96,
+        font_size= fs,
     )
     async with (await browser_pool.lease_page()) as page:  # type: ignore
         await page.set_content(html, wait_until="domcontentloaded")
