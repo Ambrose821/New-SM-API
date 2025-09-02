@@ -73,7 +73,7 @@ class BrowserPool:
                 return self.page
             async def _filter(self, route, req):
                 u = req.url.lower()
-                if any(x in u for x in ["google-analytics","gtm.js",".woff",".ttf"]):
+                if any(x in u for x in ["google-analytics","gtm.js" ]):
                     return await route.abort()
                 return await route.continue_()
             async def __aexit__(self, exc_type, exc, tb):
