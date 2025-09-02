@@ -19,6 +19,7 @@ export interface NewsContent{
 headline: String,
 summary: String,
 keywords: String[],
+highlightWords: String[],
 }
 
 export interface ImageData{

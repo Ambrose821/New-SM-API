@@ -37,8 +37,9 @@ export class GeminiLLMAgent implements LLMAgent {
                     },
                     headline: {
                     type: Type.STRING,
-                    description: "A short, original headline that reflects the main theme or takeaway from the summary, written in an engaging tone for social media. It must be written in a way that sparks debate and encourages comments.If you cannot complete the request, respond only with 'NULL'",
-                    },
+                    description: "A short, original headline that reflects the main theme or takeaway from the summary, written in an engaging tone for social media. It must be written in a way that sparks debate and encourages comments.If you cannot complete the request, respond only with 'NULL'"
+                  
+                  },
                     keywords: {
                     type: Type.ARRAY,
                     description: "2 search terms for Openverse image search. The first prioritize the main subject from the article (e.g., people, places, institutions).The second should prioritize a general,generic topic related to the article which will be used as a background image(eg., theme,topic,related group,place(if its general enough such as a country)) Search Terms must be useful for finding visually relevant public domain images that clearly connect to the post topic.Never provide more than 2 words. If you cannot complete the request, respond only with 'NULL'",
@@ -46,6 +47,10 @@ export class GeminiLLMAgent implements LLMAgent {
                         type: Type.STRING,
                     },
                     },
+                    highlightWords:{
+                        type: Type.ARRAY,
+                        description:"2-5 key words and/or names from the headline you just generate above.  These should be the most impactful, relevant, or emotionally charged words or phrases from your own headline, chosen to grab a reader's attention."
+                    }
                 },
                 },
             };
