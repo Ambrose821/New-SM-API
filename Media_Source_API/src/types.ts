@@ -27,3 +27,25 @@ export interface ImageData{
     keyword:String|null
 
 }
+
+export interface RenderRequest{
+
+    bg_url: String,
+    fg_url: String|null,
+    caption: String,
+    highlight: String[]
+    category: String,
+    brand: String,
+    
+    width: number,
+    height:number,
+    duration:number
+    fps:30,
+
+    encoder: String // Should be "libx264"
+    preset:String //Normally "medium",
+
+
+
+}
+
