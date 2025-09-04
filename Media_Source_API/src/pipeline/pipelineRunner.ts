@@ -6,7 +6,7 @@ import { LLMAgent,GeminiLLMAgent } from '../services/AIServices/LLMAgent'
 import { LLMClient } from '../services/AIServices/LLMClient'
 import { OpenverseClient } from "../services/ImageAndVideoSource/openVerseClient";
 import PixabayClient from "../services/ImageAndVideoSource/pixaBayClient";
-
+import { MediaEditingClient } from "../services/MediaEditing/MediaEditingClient";
 
 /*
     This class acts as the controller for all functionality of the media processing pipeline and will perform all pipeline actions per media source.
@@ -17,11 +17,16 @@ export default class PipelineRunner{
     private sourcer : Sourcer;
     private sourceURL : string;
     private genres :Genre[];
+    private mediaEditingClient: MediaEditingClient;
+    private llmCli: LLMClient;
 
-    constructor(sourcer: Sourcer, sourceURL: string,genres: Genre[]){
+    constructor(sourcer: Sourcer,llmCli:LLMClient,mediaEditingClient: MediaEditingClient, sourceURL: string,genres: Genre[]){
         this.sourceURL = sourceURL;
         this.sourcer = sourcer;
+        this.llmCli = llmCli;
+        this.mediaEditingClient =mediaEditingClient
         this.genres = genres;
+        
 
     }
 
@@ -81,10 +86,9 @@ curl -X POST http://localhost:8000/render \
 
         try {
 
-            const llmCli = new LLMClient(new GeminiLLMAgent());
-
+            
             const promptStr = mediaObj.headline + " " + mediaObj.textSnippet;
-            const newsContent = await llmCli.generateNewsContent(promptStr)
+            const newsContent = await this.llmCli.generateNewsContent(promptStr)
             
             
             const keywords = newsContent?.keywords;

@@ -79,6 +79,8 @@ app.listen(PORT, () =>{
 
 import { LLMAgent,GeminiLLMAgent } from './services/AIServices/LLMAgent'
 import { LLMClient } from './services/AIServices/LLMClient'
+import { MediaEditingClient } from './services/MediaEditing/MediaEditingClient'
+import { simpleMediaEditingAgent } from './services/MediaEditing/MediaEditingAgent'
 
 
 
@@ -86,11 +88,12 @@ import { LLMClient } from './services/AIServices/LLMClient'
 
 //Connect to Mongo
 //console.log(process.env.MONGO_URI)
+const llmCli = new LLMClient(new GeminiLLMAgent());
 
 
 
 //Test pipeline 
-const runner = new PipelineRunner(new Sourcer(new rssAppStrategy()),'https://rss.app/feeds/tmOEuxn2W4E8x9fv.xml',['politics']);
+const runner = new PipelineRunner(new Sourcer(new rssAppStrategy()),new LLMClient(new GeminiLLMAgent()),new MediaEditingClient(new simpleMediaEditingAgent()),'https://rss.app/feeds/tmOEuxn2W4E8x9fv.xml',['politics']);
 
 
 
