@@ -1,4 +1,6 @@
+import e from "express";
 import { RenderResponse,RenderRequest } from "../../types";
+import axios from "axios";
 
 export interface MediaEditingAgent{
 
@@ -7,16 +9,33 @@ export interface MediaEditingAgent{
 }
 
 export class simpleMediaEditingAgent implements MediaEditingAgent{
+        private apiURL = 'http://localhost:8000'
+
         async getBasicImagePost(payLoad:RenderRequest):Promise<RenderResponse>{
-            return {
-                  video_url: null,
-                  image_url:null,
-                  details:null
-                
-            };
+
+            try{
+                const response = await axios.post(`${this.apiURL}/render`,payLoad)
+                console.log(response.data)
+                return response.data;
+
+            }catch(error){
+                if (
+                    typeof error === "object" &&
+                    error !== null &&
+                    "message" in error &&
+                    "status" in error
+                ) {
+                    throw new Error("Error in simpleMediaEditingAgent: getBasicImagePost: " + error.message+ ", " + error.status)
+                }
+                else{
+                    throw new Error("Error in simpleMediaEditingAgent: getBasicImagePost: " + error)
+                }
+                }
+            }
+           
         }
 
-}
+
 
 /*
 
