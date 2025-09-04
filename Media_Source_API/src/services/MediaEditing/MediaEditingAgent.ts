@@ -9,7 +9,6 @@ export interface MediaEditingAgent{
 export class simpleMediaEditingAgent implements MediaEditingAgent{
         async getBasicImagePost(payLoad:RenderRequest):Promise<RenderResponse>{
             return {
-
                   video_url: null,
                   image_url:null,
                   details:null
