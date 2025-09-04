@@ -6,7 +6,7 @@ import { MediaEditingAgent } from "./MediaEditingAgent"
 This class is the "Context" with respect to the Media Editing Strategy pattern implementation. 
 The Strategy is the MediaEditingAgent
 */
-export class MediaEditingService{
+export class MediaEditingClient{
     private mediaEditingAgent : MediaEditingAgent;
 
     public constructor(mediaEditingAgent:MediaEditingAgent){
