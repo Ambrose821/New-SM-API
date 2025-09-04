@@ -49,7 +49,10 @@ export interface RenderRequest{
     encoder: String, // Should be "libx264"
     preset:String, //Normally "medium",
 
-
-
 }
 
+export interface RenderResponse{
+    video_url: String |null,
+    image_url: String|null,
+    details:String|null
+}
