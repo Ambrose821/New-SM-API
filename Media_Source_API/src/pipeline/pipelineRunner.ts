@@ -1,4 +1,4 @@
-import {Media,Genre} from "../types";
+import {Media,Genre, RenderRequest} from "../types";
 
 import Sourcer from "../services/Sourcing/Sourcer";
 
@@ -48,6 +48,35 @@ export default class PipelineRunner{
     }
 
 
+
+
+
+/*
+
+
+curl -X POST http://localhost:8000/render \
+  -H "Content-Type: application/json" \
+  -d '{
+    "bg_url": "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
+    "fg_url": "https://images.unsplash.com/photo-1519125323398-675f0ddb6308",
+    "caption": "Breaking News: Market Surges!",
+    "highlight": ["news", "market"],
+    "category": "Finance",
+    "brand": "BrandA",
+
+    "width": 1080,
+    "height": 1920,
+    "duration": 20,
+    "fps": 30,
+
+    "s3_bucket": "mediaapibucket",
+    "s3_key": "posts/demo/post.mp4",
+
+    "encoder": "libx264",
+    "preset": "medium"
+  }'
+*/
+
     public async perMediaPipeline(mediaObj: Media){
 
         try {
@@ -76,10 +105,28 @@ export default class PipelineRunner{
                 }
             })
             );
+
+          
           console.log("------------------------------------------------------------------");
           console.log(newsContent)
           console.log(imageDataArr)
           console.log("------------------------------------------------------------------")
+         const mediaEditingPayload = {
+        bg_url: imageDataArr[0]?.url ?? "" as String,
+        fg_url: imageDataArr[1]?.url ?? "" as String,
+        caption: newsContent.headline,
+        highlight: newsContent.highlightWords,
+        category: this.genres[0],
+        brand: mediaObj.sourceName, // <-- Added brand
+        width: 1080,
+        height: 1920,
+        duration: 20,
+        fps: 30,
+        s3_bucket: "mediaapibucket",
+        s3_key: "posts/demo/post.mp4",
+        encoder: "libx264",
+        preset: "medium"
+    } as RenderRequest
 
         } catch (error) {
             throw new Error("Error in pipelineRunner perMediaPipeline(): " + error)
