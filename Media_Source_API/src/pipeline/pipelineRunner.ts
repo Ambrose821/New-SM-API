@@ -1,4 +1,4 @@
-import {Media,Genre, RenderRequest} from "../types";
+import {Media,Genre, RenderRequest, RenderResponse} from "../types";
 
 import Sourcer from "../services/Sourcing/Sourcer";
 
@@ -88,6 +88,7 @@ curl -X POST http://localhost:8000/render \
 
             
             const promptStr = mediaObj.headline + " " + mediaObj.textSnippet;
+
             const newsContent = await this.llmCli.generateNewsContent(promptStr)
             
             
@@ -116,8 +117,8 @@ curl -X POST http://localhost:8000/render \
           console.log(imageDataArr)
           console.log("------------------------------------------------------------------")
          const mediaEditingPayload = {
-            bg_url: imageDataArr[0]?.url ?? "" as String,
-            fg_url: imageDataArr[1]?.url ?? "" as String,
+            bg_url: imageDataArr[1]?.url ?? "" as String,
+            fg_url: imageDataArr[0]?.url ?? "" as String,
             caption: newsContent.headline,
             highlight: newsContent.highlightWords,
             category: this.genres[0],
@@ -126,11 +127,14 @@ curl -X POST http://localhost:8000/render \
             height: 1920,
             duration: 20,
             fps: 30,
+            audio_path:"audio.mp3",
             s3_bucket: "mediaapibucket",
-            s3_key: "posts/demo/post.mp4",
+            s3_key: `posts/${Date.now()}/post.mp4`,
             encoder: "libx264",
             preset: "medium"
         } as RenderRequest
+
+        const renderResponse: RenderResponse = await this.mediaEditingClient.generateSimplePost(mediaEditingPayload) 
 
         } catch (error) {
             throw new Error("Error in pipelineRunner perMediaPipeline(): " + error)
