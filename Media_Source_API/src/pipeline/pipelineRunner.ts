@@ -112,21 +112,21 @@ curl -X POST http://localhost:8000/render \
           console.log(imageDataArr)
           console.log("------------------------------------------------------------------")
          const mediaEditingPayload = {
-        bg_url: imageDataArr[0]?.url ?? "" as String,
-        fg_url: imageDataArr[1]?.url ?? "" as String,
-        caption: newsContent.headline,
-        highlight: newsContent.highlightWords,
-        category: this.genres[0],
-        brand: mediaObj.sourceName, // <-- Added brand
-        width: 1080,
-        height: 1920,
-        duration: 20,
-        fps: 30,
-        s3_bucket: "mediaapibucket",
-        s3_key: "posts/demo/post.mp4",
-        encoder: "libx264",
-        preset: "medium"
-    } as RenderRequest
+            bg_url: imageDataArr[0]?.url ?? "" as String,
+            fg_url: imageDataArr[1]?.url ?? "" as String,
+            caption: newsContent.headline,
+            highlight: newsContent.highlightWords,
+            category: this.genres[0],
+            brand: "",
+            width: 1080,
+            height: 1920,
+            duration: 20,
+            fps: 30,
+            s3_bucket: "mediaapibucket",
+            s3_key: "posts/demo/post.mp4",
+            encoder: "libx264",
+            preset: "medium"
+        } as RenderRequest
 
         } catch (error) {
             throw new Error("Error in pipelineRunner perMediaPipeline(): " + error)
