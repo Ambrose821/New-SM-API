@@ -42,7 +42,16 @@ export class GeminiLLMAgent implements LLMAgent {
                   },
                     keywords: {
                     type: Type.ARRAY,
-                    description: "2 search terms for Openverse image search. The first prioritize the main subject from the article (e.g., people, places, institutions).The second should prioritize a general,generic topic related to the article which will be used as a background image(eg., theme,topic,related group,place(if its general enough such as a country)) Search Terms must be useful for finding visually relevant public domain images that clearly connect to the post topic.Never provide more than 2 words. If you cannot complete the request, respond only with 'NULL'",
+                    description: `KEYWORDS RULES:
+Return exactly 2 terms for Openverse/Pixabay.
+k0 = specific subject (brand/org/person/place). For countries use "<country> logo" (not demonyms). Use exact proper names; full names for people; for cities use "<city> skyline" if apt, for brands "<brand name> logo" if apt.
+k1 = generic scene matching theme (pick a common, visually clear scene).
+Both terms: 1–2 words, nouns only, no punctuation, no duplicates.
+Examples:
+- political violence in Pakistan → ["Pakistan logo","protest"]
+- Air Canada passenger disputes → ["Air Canada","airport counter"]
+- Ukraine war update → ["Ukraine flag","soldier silhouette"]
+Return JSON per schema.`,
                     items: {
                         type: Type.STRING,
                     },
@@ -58,7 +67,7 @@ export class GeminiLLMAgent implements LLMAgent {
                 },
             };
 
-            const model = 'gemini-2.0-flash';
+            const model = 'gemini-2.5-flash';
             const contents = [
                 {
                 role: 'user',
