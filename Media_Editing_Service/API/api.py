@@ -1,5 +1,6 @@
 # app_fastapi.py
 import os, re, tempfile, subprocess, asyncio
+from io import BytesIO
 from concurrent.futures import ThreadPoolExecutor
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
@@ -8,6 +9,7 @@ from playwright.async_api import async_playwright
 import boto3
 from boto3.s3.transfer import TransferConfig
 from dotenv import load_dotenv
+from botocore.exceptions import ClientError, NoCredentialsError,BotoCoreError
 
 
 #--- Run with uvicorn api:app --host 0.0.0.0 --port 8000 --workers 2 --loop uvloop ##
@@ -140,7 +142,27 @@ async def render_png_bytes(req: RenderReq) -> bytes:
         await page.wait_for_load_state("networkidle")
         return await page.screenshot(full_page=False)
 
-def encode_and_upload(image_bytes: bytes, req: RenderReq) -> str:
+def upload_s3_file(bytes:bytes, file_type:str,bucket:str,s3_key:str):
+    try:
+        file_obj = BytesIO(bytes)
+        s3.upload_fileobj(file_obj,Bucket=bucket,Key =s3_key, ExtraArgs={"ContentType":file_type},Config=S3_CFG)
+        region = os.getenv("AWS_DEFAULT_REGION") or os.getenv("AWS_REGION") or ""
+        if region in ("","us-east-1"):
+            return f"https://{bucket}.s3.amazonaws.com/{s3_key}"
+        return f"https://{bucket}.s3.{region}.amazonaws.com/{s3_key}"
+    except NoCredentialsError as e:
+        print("No AWS Credentials or Bad Credentials: " +str(e))
+        
+    except ClientError as e:
+            error_code = e.response['Error']['Code']
+            error_message = e.response['Error']['Message']
+            print(f"S3 ClientError: {error_code} - {error_message}")
+    except BotoCoreError as e:
+        print(f"AWS BotoCoreError: {str(e)}")
+    except Exception as e:
+        print("Unexpected upload_s3_file Exception :" +str(e))
+
+def encode_and_upload(image_bytes: bytes, req: RenderReq) -> dict:
     with tempfile.NamedTemporaryFile(suffix=".png", delete=False, dir=TMP_DIR) as tmp:
         tmp.write(image_bytes); tmp.flush(); png_path = tmp.name
     cmd = [
@@ -166,6 +188,7 @@ def encode_and_upload(image_bytes: bytes, req: RenderReq) -> str:
         rc = proc.wait(timeout=max(30, req.duration + 15))
         if rc != 0:
             raise RuntimeError(f"ffmpeg exited {rc}: {err.decode(errors='ignore')}")
+      
     finally:
         try:
             if proc.stdout and not proc.stdout.closed: proc.stdout.close()
@@ -173,11 +196,16 @@ def encode_and_upload(image_bytes: bytes, req: RenderReq) -> str:
         except: pass
         try: os.remove(png_path)
         except: pass
+    thumbnail_url = upload_s3_file(image_bytes,"image/png",req.s3_bucket,req.s3_key+"thumbnail")
 
     region = os.getenv("AWS_DEFAULT_REGION") or os.getenv("AWS_REGION") or ""
     if region in ("","us-east-1"):
-        return f"https://{req.s3_bucket}.s3.amazonaws.com/{req.s3_key}"
-    return f"https://{req.s3_bucket}.s3.{region}.amazonaws.com/{req.s3_key}"
+        video_url= f"https://{req.s3_bucket}.s3.amazonaws.com/{req.s3_key}"
+    
+
+    video_url= f"https://{req.s3_bucket}.s3.{region}.amazonaws.com/{req.s3_key}"
+
+    return{"thumbnail":thumbnail_url,"video":video_url}
 
 @app.get("/healthz")
 async def healthz(): return {"ok": True}
@@ -189,7 +217,7 @@ async def render(req: RenderReq):
         try:
             png = await render_png_bytes(req)
             # Offload blocking encode/upload onto a thread without blocking the loop
-            url = await asyncio.to_thread(encode_and_upload, png, req)
-            return {"url": url}
+            urls = await asyncio.to_thread(encode_and_upload, png, req)
+            return urls
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
