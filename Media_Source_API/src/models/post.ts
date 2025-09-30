@@ -53,16 +53,4 @@ const postSchema = new Schema<Post>({
 
 })
 
-postSchema.methods.savePost = async function(post: Post): Promise<Post> {
-
-    try{
-        const savedPost = await this.save();
-        return savedPost as Post;
-    }catch(error){
-        throw new Error("Error saving mongo Post object: " + error)
-    }
-}
-
-
-
-export default model<Post>('Post',postSchema)
+export default model<Post>('postSchema',postSchema)
