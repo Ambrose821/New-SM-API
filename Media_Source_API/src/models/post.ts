@@ -2,7 +2,7 @@ import {Schema,model} from 'mongoose'
 
 import{Post} from '../types'
 
-const post = new Schema<Post>({
+const postSchema = new Schema<Post>({
     headline:{
         type:String,
         unique:true,
@@ -44,8 +44,25 @@ const post = new Schema<Post>({
     audioAttributions:{
         type:[String],
         required:false
+    },
+    posted:{
+        type:Boolean,
+        default:false
+
     }
 
 })
 
-export default model<Post>('Post',post)
+postSchema.methods.savePost = async function(post: Post): Promise<Post> {
+
+    try{
+        const savedPost = await this.save();
+        return savedPost as Post;
+    }catch(error){
+        throw new Error("Error saving mongo Post object: " + error)
+    }
+}
+
+
+
+export default model<Post>('Post',postSchema)

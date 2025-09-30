@@ -22,7 +22,8 @@ export interface Post{
     sourcedAt:Date
     imageAttributions: String[] | null,
     videoAttributions: String[]|null,
-    audioAttributions: String [] | null
+    audioAttributions: String [] | null,
+    posted: Boolean|null
 
 }
 export interface NewsContent{
