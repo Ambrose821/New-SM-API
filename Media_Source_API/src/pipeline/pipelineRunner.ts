@@ -1,4 +1,4 @@
-import {Media,Genre, RenderRequest, RenderResponse} from "../types";
+import {Media,Genre, RenderRequest, RenderResponse, Post} from "../types";
 
 import Sourcer from "../services/Sourcing/Sourcer";
 
@@ -7,6 +7,7 @@ import { LLMClient } from '../services/AIServices/LLMClient'
 import { OpenverseClient } from "../services/ImageAndVideoSource/openVerseClient";
 import PixabayClient from "../services/ImageAndVideoSource/pixaBayClient";
 import { MediaEditingClient } from "../services/MediaEditing/MediaEditingClient";
+import { pipeLineSubscriber } from "./pipelineSubscribers/piplineSubscriber";
 
 /*
     This class acts as the controller for all functionality of the media processing pipeline and will perform all pipeline actions per media source.
@@ -20,6 +21,8 @@ export default class PipelineRunner{
     private mediaEditingClient: MediaEditingClient;
     private llmCli: LLMClient;
 
+    private subscribers: pipeLineSubscriber[] =[];
+
     constructor(sourcer: Sourcer,llmCli:LLMClient,mediaEditingClient: MediaEditingClient, sourceURL: string,genres: Genre[]){
         this.sourceURL = sourceURL;
         this.sourcer = sourcer;
@@ -28,6 +31,14 @@ export default class PipelineRunner{
         this.genres = genres;
         
 
+    }
+
+    public addSubscriber(subscriber:pipeLineSubscriber){
+        this.subscribers.push(subscriber)
+
+    }
+    public notifySubscribers(post:Post){
+        this.subscribers.forEach((sub) => sub.handleReceivePost(post))
     }
 
     public async runPipeline(){
