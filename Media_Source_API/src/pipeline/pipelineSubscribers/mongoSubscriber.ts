@@ -8,6 +8,9 @@ export class mongoSubscriber implements pipeLineSubscriber{
 
             const newPost = new postSchema(post);
             await newPost.save();
+
+            console.log("=================== Saved post to mongo ================:")
+            console.log(newPost)
             return newPost;
         }catch(error){
             throw new Error("Error saving mongo post in handleReceivePost: "+error)

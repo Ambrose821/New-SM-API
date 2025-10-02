@@ -65,7 +65,7 @@ export interface RenderRequest{
 }
 
 export interface RenderResponse{
-    video_url: String |null,
-    image_url: String|null,
+    video: String |null,
+    thumbnail: String|null,
     details:String|null
 }

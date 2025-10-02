@@ -81,7 +81,7 @@ import { LLMAgent,GeminiLLMAgent } from './services/AIServices/LLMAgent'
 import { LLMClient } from './services/AIServices/LLMClient'
 import { MediaEditingClient } from './services/MediaEditing/MediaEditingClient'
 import { simpleMediaEditingAgent } from './services/MediaEditing/MediaEditingAgent'
-
+import { mongoSubscriber } from './pipeline/pipelineSubscribers/mongoSubscriber'
 
 
 
@@ -101,6 +101,7 @@ async function test(){
   try{
     // const string = await OpenverseTokenHandler.getInstance().getCurrentAccessToken();
     // console.log(string)
+    runner.addSubscriber(new mongoSubscriber())
     await runner.runPipeline()
     // const cli = new OpenverseClient();
     // const imageData = await cli.getImagesFromKeyWords(1, ['trump','russia'])

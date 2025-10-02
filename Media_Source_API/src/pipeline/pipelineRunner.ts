@@ -12,6 +12,8 @@ import { pipeLineSubscriber } from "./pipelineSubscribers/piplineSubscriber";
 /*
     This class acts as the controller for all functionality of the media processing pipeline and will perform all pipeline actions per media source.
 
+    It is also the publisher or 'subject' for the pipelineSubscribers which get notified for each new post
+
 */
 export default class PipelineRunner{
 
@@ -123,10 +125,7 @@ curl -X POST http://localhost:8000/render \
             );
 
           
-          console.log("------------------------------------------------------------------");
-          console.log(newsContent)
-          console.log(imageDataArr)
-          console.log("------------------------------------------------------------------")
+         
          const mediaEditingPayload = {
             bg_url: imageDataArr[1]?.url ?? "" as String,
             fg_url: imageDataArr[0]?.url ?? "" as String,
@@ -145,8 +144,24 @@ curl -X POST http://localhost:8000/render \
             preset: "medium"
         } as RenderRequest
 
-        const renderResponse: RenderResponse = await this.mediaEditingClient.generateSimplePost(mediaEditingPayload) 
+        const renderResponse: RenderResponse = await this.mediaEditingClient.generateSimplePost(mediaEditingPayload)
+        
+        const imageAttributions = imageDataArr.map((element)=>{
+            return element?.attribution
+        })
+        const post:Post = {
+            headline: newsContent.headline,
+            description: newsContent.summary,
+            thumbnailUrl: renderResponse.thumbnail ,
+            videoUrl: renderResponse.video,
+            mediaType: renderResponse.video ? 'Video' : 'Image',
+            genre: mediaObj.genre,
+            imageAttributions:imageAttributions? imageAttributions :null
+            
+         }as Post
 
+         
+         this.notifySubscribers(post)
         } catch (error) {
             throw new Error("Error in pipelineRunner perMediaPipeline(): " + error)
         }
