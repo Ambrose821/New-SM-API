@@ -11,6 +11,7 @@
     "tailwind:watch": "npx @tailwindcss/cli -i ./src/index.css -o ./src/output.css --watch"
   },
   "dependencies": {
+    "@clerk/clerk-react": "^5.49.1",
     "@tailwindcss/postcss": "^4.1.14",
     "@tailwindcss/vite": "^4.1.14",
     "react": "^19.1.1",
