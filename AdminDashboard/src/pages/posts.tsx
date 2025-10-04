@@ -1,6 +1,7 @@
 
 import type {Post} from "@/types";
 import PostCard from "@/components/post-card";
+import { useEffect, useState } from "react";
 export default function Posts(){
 
 const samplePosts: Post[] = [
@@ -204,19 +205,50 @@ const samplePosts: Post[] = [
   }
 ];
 
+const [searchTerm, setSearchTerm] = useState<string>('');
+const [displayedPosts,setDisplayedPosts] = useState<Post[]>(samplePosts)
+
+useEffect(()=>{
+  if(searchTerm){
+    let searchTerms = searchTerm.toLowerCase().split(/[,.; ]+/)
+    let interestedPost = samplePosts.filter((post) => {
+      const headline = post.headline.toLowerCase();
+      const description = post.description?.toLowerCase() ?? "";
+      return searchTerms.some(term =>
+        term && (headline.includes(term) || description.includes(term))
+      );
+    });
+    console.log("========= "+ interestedPost)
+    
+    setDisplayedPosts(interestedPost)
+  }else{
+    setDisplayedPosts(samplePosts)
+  }
+  
+},[searchTerm])
 
 return (
   
   <div className="h-dvh w-screen bg-white grid grid-rows-[15%_85%] p-8 self-center">
     <div className="w-full border-b border-b-grey-300 flex flex-col justify-end">
       <div className="flex flex-row w-200">
-        <div className="w-full mb-5">
-          <input className ="w-full border rounded-lg p-3"type="text" placeholder="Search for Posts by key words or phrases" ></input>
+        <div className="w-full mb-5 relative">
+          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 104.5 4.5a7.5 7.5 0 0012.15 12.15z" />
+            </svg>
+          </span>
+          <input
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full border rounded-lg p-3 pl-10"
+            type="text"
+            placeholder="Search for Posts by key words or phrases (Based on headline and description)"
+          />
         </div>
       </div>
     </div>
     <div className="w-full bg-white overflow-y-auto overflow-x-auto overscroll-contain grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 p-10">
-      {samplePosts.map((post, i) => (
+      {displayedPosts.map((post, i) => (
         <div key={i} className="flex justify-center">
           <PostCard post={post} />
         </div>
