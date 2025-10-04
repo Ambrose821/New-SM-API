@@ -26,7 +26,7 @@ export function AppSidebar() {
     const items = [
         {
             title: "Posts",
-            path:"/posts",
+            path:"/dashboard/posts",
             icon:ImageUp
 
         },

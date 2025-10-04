@@ -18,10 +18,10 @@ export default function Authenticated(){
     })
     
     return(
-        <div className="w-screen h-screen " >
-               <SidebarProvider>
+        <div className="h-full bg-white" >
+            <SidebarProvider>
             <AppSidebar />
-            <main className="w-full m-4">
+            <main className="m-4">
                 <SidebarTrigger className="text-foreground"/>
                 <Outlet />
             </main>
