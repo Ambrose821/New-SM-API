@@ -4,8 +4,8 @@ import './index.css'
 import App from './App.tsx'
 import { ClerkProvider } from '@clerk/clerk-react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import SignedOutLayout from './layouts/SignedOutLayout.tsx'
-import SignedInLayout from './layouts/SignedInLayout.tsx'
+import UnAuthenticated from './layouts/unauthenticated.tsx'
+import Authenticated from './layouts/authenticated.tsx'
 
 
 // Import your Publishable Key
@@ -22,8 +22,8 @@ createRoot(document.getElementById('root')!).render(
 
       <BrowserRouter>
         <Routes>
-          <Route path='/' element={<SignedOutLayout/>}/>
-          <Route path ='/dashboard' element={<SignedInLayout/>}/>
+          <Route path='/' element={<UnAuthenticated/>}/>
+          <Route path ='/dashboard' element={<Authenticated />}/>
         </Routes>
       </BrowserRouter>
      

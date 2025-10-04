@@ -3,7 +3,7 @@ import {useAuth,SignIn } from '@clerk/clerk-react';
 import { useEffect } from 'react';
 
 
-export default function SignedOutLayout(){
+export default function UnAuthenticated(){
     const {isSignedIn,isLoaded} = useAuth()
     const navigate = useNavigate()
 
