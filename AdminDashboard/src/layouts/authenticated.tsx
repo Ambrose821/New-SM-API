@@ -18,12 +18,16 @@ export default function Authenticated(){
     })
     
     return(
-        <div className="h-full bg-white" >
+        <div className="min-h-dvh bg-white flex" >
             <SidebarProvider>
             <AppSidebar />
-            <main className="m-4">
+            <main className="flex-1 min-h-dvh overlow-hidden">
+                <div className="p-4">
                 <SidebarTrigger className="text-foreground"/>
+                </div>
+                <div className="h-[calc(100dvh-4rem)] overflow-hidden">
                 <Outlet />
+                </div>
             </main>
             </SidebarProvider>
             
