@@ -4,7 +4,7 @@ export interface Post{
     thumbnailUrl: string |null // thumbnail is the actualy post if no video is provided
     videoUrl : String | null
     mediaType :'Video' | 'Image',
-    genre: String[],
+    genre: string[],
     sourcedAt:Date
     imageAttributions: String[] | null,
     videoAttributions: String[]|null,

@@ -1,9 +1,17 @@
-
-import type {Post} from "@/types";
+import type { Post } from "@/types";
 import PostCard from "@/components/post-card";
-import { useEffect, useState } from "react";
-export default function Posts(){
+import { useEffect, useMemo, useState } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+} from "@/components/ui/dropdown-menu"; // <-- all from shadcn
+import { Button } from "@/components/ui/button";
+import { ChevronDown } from "lucide-react";
 
+
+export default function Posts(){
 const samplePosts: Post[] = [
   {
     headline: 'Merab Dvalishvili Eyes UFC History with 100 Takedowns at UFC 320',
@@ -11,7 +19,7 @@ const samplePosts: Post[] = [
     thumbnailUrl: 'https://mediaapibucket.s3.amazonaws.com/posts/1759605159202/post.mp4thumbnail',
     videoUrl: 'https://mediaapibucket.s3.us-east-1.amazonaws.com/posts/1759605159202/post.mp4',
     mediaType: 'Video',
-    genre: [ 'politics' ],
+    genre: [ 'sports' ],
     imageAttributions: [
       '"Merab Dvalishvili 2022 (2)" by Onlyfans is licensed under CC BY 3.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/3.0/.',
       ''
@@ -206,32 +214,80 @@ const samplePosts: Post[] = [
 ];
 
 const [searchTerm, setSearchTerm] = useState<string>('');
+
 const [displayedPosts,setDisplayedPosts] = useState<Post[]>(samplePosts)
 
+const [filteredGenres,setFilteredGenres] = useState<Set<string>>(new Set())
+
+
+
+const getGenres = (posts: Post[]):Set<string> =>{
+  const genreSet: Set<string> = new Set()
+
+  posts.forEach((post)=>{
+    const genres = post.genre;
+    genres.forEach(genre => {
+      genreSet.add(genre)
+    });
+  })
+
+  return(genreSet)
+
+}
+
+const genres:Set<string> = useMemo(()=>{
+  return getGenres(samplePosts)
+
+},[samplePosts])
+
 useEffect(()=>{
-  if(searchTerm){
+  if(searchTerm || filteredGenres.size){
     let searchTerms = searchTerm.toLowerCase().split(/[,.; ]+/)
     let interestedPost = samplePosts.filter((post) => {
       const headline = post.headline.toLowerCase();
       const description = post.description?.toLowerCase() ?? "";
-      return searchTerms.some(term =>
-        term && (headline.includes(term) || description.includes(term))
-      );
+
+      let textHit;
+      if(searchTerm){      
+        textHit = searchTerms.some(term =>
+          term && (headline.includes(term) || description.includes(term))
+        );
+      }else{
+        textHit = true
+      }
+      let genreHit;//Default to true if no genres are selected (show all)
+      console.log(filteredGenres)
+      if(filteredGenres.size>0){
+        genreHit = post.genre.some(g => filteredGenres.has(g));
+      }else{
+        genreHit = true
+      }
+      return genreHit && textHit
+
     });
-    console.log("========= "+ interestedPost)
     
     setDisplayedPosts(interestedPost)
   }else{
     setDisplayedPosts(samplePosts)
   }
   
-},[searchTerm])
+},[searchTerm,filteredGenres])
+
+const toggleGenre = (genre: string,checked : boolean)=>{
+  setFilteredGenres(prev=>{
+     const next = new Set(prev);
+      if (checked) next.add(genre);
+      else next.delete(genre);
+      return next;
+  })
+}
+
 
 return (
   
   <div className="h-dvh w-screen bg-white grid grid-rows-[15%_85%] p-8 self-center">
     <div className="w-full border-b border-b-grey-300 flex flex-col justify-end">
-      <div className="flex flex-row w-200">
+      <div className="flex flex-row content-between gap-10 w-200">
         <div className="w-full mb-5 relative">
           <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -244,6 +300,30 @@ return (
             type="text"
             placeholder="Search for Posts by key words or phrases (Based on headline and description)"
           />
+        </div>
+        <div>
+          <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="ml-auto">
+              Genre <ChevronDown />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {[...genres]
+              .map((genre) => {
+                return (
+                  <DropdownMenuCheckboxItem
+                    key={genre}
+                    className="capitalize"
+                    checked={filteredGenres?.has(genre) /* Replace with actual checked logic if needed */}
+                    onCheckedChange={(v) => toggleGenre(genre, Boolean(v))}
+                  >
+                    {genre}
+                  </DropdownMenuCheckboxItem>
+                )
+              })}
+          </DropdownMenuContent>
+        </DropdownMenu>
         </div>
       </div>
     </div>
