@@ -93,7 +93,7 @@ const llmCli = new LLMClient(new GeminiLLMAgent());
 
 
 //Test pipeline 
-const runner = new PipelineRunner(new Sourcer(new rssAppStrategy()),new LLMClient(new GeminiLLMAgent()),new MediaEditingClient(new simpleMediaEditingAgent()),'https://rss.app/feeds/taKStWxX4nFK7tCF.xml',['politics']);
+const runner = new PipelineRunner(new Sourcer(new rssAppStrategy()),new LLMClient(new GeminiLLMAgent()),new MediaEditingClient(new simpleMediaEditingAgent()),'https://rss.app/feeds/tt9zcrPi3NtixMvz.xml',['politics']);
 
 
 

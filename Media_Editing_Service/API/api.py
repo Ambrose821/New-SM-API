@@ -1,5 +1,5 @@
 # app_fastapi.py
-import os, re, tempfile, subprocess, asyncio
+import os, re, tempfile, subprocess, asyncio, traceback
 from io import BytesIO
 from concurrent.futures import ThreadPoolExecutor
 from fastapi import FastAPI, HTTPException
@@ -10,6 +10,7 @@ import boto3
 from boto3.s3.transfer import TransferConfig
 from dotenv import load_dotenv
 from botocore.exceptions import ClientError, NoCredentialsError,BotoCoreError
+import shutil
 
 
 #--- Run with uvicorn api:app --host 0.0.0.0 --port 8000 --workers 2 --loop uvloop ##
@@ -19,6 +20,7 @@ BROWSER_POOL   = int(os.getenv("BROWSER_POOL", "2"))
 FFMPEG_ENCODER = os.getenv("FFMPEG_ENCODER", "libx264")
 TEMPLATES_DIR  = os.getenv("TEMPLATES_DIR", ".")
 TMP_DIR        = "/dev/shm" if os.path.exists("/dev/shm") else None
+FFMPEG_PATH    = shutil.which("ffmpeg")
 
 # ---- Globals ----
 app = FastAPI()
@@ -28,6 +30,13 @@ load_dotenv()
 jinja = Environment(loader=FileSystemLoader(TEMPLATES_DIR),
                     autoescape=select_autoescape(["html"]))
 template = jinja.get_template("post_template.html")
+
+# ---- Basic prints instead of logging ----
+def _print(msg: str):
+    try:
+        print(msg)
+    except Exception:
+        pass
 
 s3 = boto3.client(
     "s3",
@@ -58,12 +67,14 @@ class BrowserPool:
             )
             ctx = await browser.new_context(viewport={"width":1080,"height":1920,"deviceScaleFactor":1})
             await self._contexts.put((browser, ctx))
+        _print(f"[BrowserPool] started size={self.size}")
 
     async def stop(self):
         while not self._contexts.empty():
             browser, ctx = await self._contexts.get()
             await ctx.close(); await browser.close()
         if self._pw: await self._pw.stop()
+        _print("[BrowserPool] stopped")
 
     async def lease_page(self):
         pool = self
@@ -89,14 +100,19 @@ browser_pool: BrowserPool | None = None
 @app.on_event("startup")
 async def _startup():
     global browser_pool
+    # Preflight: ensure ffmpeg exists
+    if not FFMPEG_PATH:
+        _print("[Preflight] ffmpeg not found on PATH. Install ffmpeg and retry.")
     browser_pool = BrowserPool(BROWSER_POOL)
     await browser_pool.start()
+    _print("[Startup] completed")
 
 @app.on_event("shutdown")
 async def _shutdown():
     if browser_pool:
         await browser_pool.stop()
     executor.shutdown(wait=False, cancel_futures=True)
+    _print("[Shutdown] completed")
 
 # ---- Models ----
 class RenderReq(BaseModel):
@@ -151,22 +167,24 @@ def upload_s3_file(bytes:bytes, file_type:str,bucket:str,s3_key:str):
             return f"https://{bucket}.s3.amazonaws.com/{s3_key}"
         return f"https://{bucket}.s3.{region}.amazonaws.com/{s3_key}"
     except NoCredentialsError as e:
-        print("No AWS Credentials or Bad Credentials: " +str(e))
+        _print(f"[S3] No AWS Credentials or Bad Credentials: {e}")
         
     except ClientError as e:
             error_code = e.response['Error']['Code']
             error_message = e.response['Error']['Message']
-            print(f"S3 ClientError: {error_code} - {error_message}")
+            _print(f"[S3] ClientError: {error_code} - {error_message}")
     except BotoCoreError as e:
-        print(f"AWS BotoCoreError: {str(e)}")
+        _print(f"[S3] BotoCoreError: {str(e)}")
     except Exception as e:
-        print("Unexpected upload_s3_file Exception :" +str(e))
+        _print(f"[S3] Unexpected upload_s3_file Exception: {e}\n{traceback.format_exc()}")
 
 def encode_and_upload(image_bytes: bytes, req: RenderReq) -> dict:
+    if not FFMPEG_PATH:
+        raise RuntimeError("ffmpeg not found. Install ffmpeg and ensure it's on PATH.")
     with tempfile.NamedTemporaryFile(suffix=".png", delete=False, dir=TMP_DIR) as tmp:
         tmp.write(image_bytes); tmp.flush(); png_path = tmp.name
     cmd = [
-        "ffmpeg","-nostdin","-loglevel","error","-y",
+        FFMPEG_PATH,"-nostdin","-loglevel","error","-y",
         "-loop","1","-t", str(req.duration), "-i", png_path
     ]
     if req.audio_path:
@@ -180,6 +198,7 @@ def encode_and_upload(image_bytes: bytes, req: RenderReq) -> dict:
         cmd += ["-c:a","aac","-b:a","128k"]
     cmd += ["-movflags","+frag_keyframe+empty_moov","-f","mp4","pipe:1"]
 
+    _print(f"[FFmpeg] start duration={req.duration}s fps={req.fps} encoder={req.encoder or FFMPEG_ENCODER} preset={req.preset} bucket={req.s3_bucket} key={req.s3_key}")
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=0)
     try:
         s3.upload_fileobj(proc.stdout, Bucket=req.s3_bucket, Key=req.s3_key,
@@ -187,7 +206,9 @@ def encode_and_upload(image_bytes: bytes, req: RenderReq) -> dict:
         err = proc.stderr.read() if proc.stderr else b""
         rc = proc.wait(timeout=max(30, req.duration + 15))
         if rc != 0:
-            raise RuntimeError(f"ffmpeg exited {rc}: {err.decode(errors='ignore')}")
+            err_text = err.decode(errors='ignore') if err else ''
+            _print(f"[FFmpeg] exit rc={rc}. stderr={err_text[:2000]}")
+            raise RuntimeError(f"ffmpeg exited {rc}: {err_text}")
       
     finally:
         try:
@@ -215,9 +236,12 @@ async def render(req: RenderReq):
     # global backpressure: prevent too many concurrent jobs
     async with sem:
         try:
+            _print(f"[Render] request bucket={req.s3_bucket} key={req.s3_key} size={req.width}x{req.height} duration={req.duration}s fps={req.fps} bg={req.bg_url} fg={req.fg_url}")
             png = await render_png_bytes(req)
             # Offload blocking encode/upload onto a thread without blocking the loop
             urls = await asyncio.to_thread(encode_and_upload, png, req)
             return urls
         except Exception as e:
+            # Print full traceback for easier debugging
+            _print(f"[Render] failed: {e}\n{traceback.format_exc()}")
             raise HTTPException(status_code=500, detail=str(e))

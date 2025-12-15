@@ -48,7 +48,6 @@ export default class PipelineRunner{
         //fetch feed
        
         const mediaObjArr :Media[]|null = await this.sourcer.source(this.sourceURL,this.genres);
-        //console.log(mediaObjArr)
         if(!mediaObjArr){
             throw new Error('Error in runPipeline: mediaObjArr is undefined')
         }
@@ -143,7 +142,7 @@ curl -X POST http://localhost:8000/render \
             encoder: "libx264",
             preset: "medium"
         } as RenderRequest
-
+        console.log(mediaEditingPayload)
         const renderResponse: RenderResponse = await this.mediaEditingClient.generateSimplePost(mediaEditingPayload)
         
         const imageAttributions = imageDataArr.map((element)=>{
@@ -159,7 +158,7 @@ curl -X POST http://localhost:8000/render \
             imageAttributions:imageAttributions? imageAttributions :null
             
          }as Post
-
+         console.log(post)
          
          this.notifySubscribers(post)
         } catch (error) {
