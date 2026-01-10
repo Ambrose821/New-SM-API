@@ -1,4 +1,4 @@
-export type Genre = 'news' | 'politics' | 'sports' | 'memes' | 'humour' | 'finance' | 'crypto'
+export type Genre = 'news' | 'politics' | 'sports' | 'memes' | 'humour' | 'finance' | 'crypto' | 'viral'
 
 export interface Media{
     headline: String,
@@ -39,6 +39,14 @@ export interface ImageData{
     keyword:String|null
 
 }
+
+export interface Pipeline{
+    source: 'rssApp' | 'newsIO' | '9gag'
+    source_url: String,
+    genre: Genre[],
+    frequency: 'daily'|'weekly'|'monthly'
+}
+
 
 export interface RenderRequest{
 

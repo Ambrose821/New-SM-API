@@ -22,6 +22,7 @@
   "dependencies": {
     "@google/genai": "^1.2.0",
     "@types/mongodb": "^4.0.6",
+    "agenda": "^5.0.0",
     "axios": "^1.9.0",
     "cookie-parser": "^1.4.7",
     "dotenv": "^16.5.0",
