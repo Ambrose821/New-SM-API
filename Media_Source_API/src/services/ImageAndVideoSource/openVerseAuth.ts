@@ -67,8 +67,11 @@ export class OpenverseTokenHandler{
             const token = await this.requestNewToken();
             this.setCurrentAccessToken(token);
             return token;
-        }catch(error){
-            throw new Error("Error in request and setToken")
+        }catch(error: any){
+            if(error.response && error.response.message){
+
+            }
+            throw new Error("Error in request and setToken" + error)
             
         }
     }

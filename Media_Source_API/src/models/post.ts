@@ -49,7 +49,7 @@ const postSchema = new Schema<Post>({
         type:Boolean,
         default:false
 
-    }
+    },
 
 })
 

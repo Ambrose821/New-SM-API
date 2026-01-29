@@ -10,6 +10,7 @@ import path from 'path'
 //My Stuff
 import { nineStrategy ,rssAppStrategy} from './services/Sourcing/SourcingStrategy'
 import connectDB from './config/db'
+import {connectAgenda} from './config/agenda-config'
 import PipelineRunner from './pipeline/pipelineRunner'
 import Sourcer from './services/Sourcing/Sourcer'
 import pLimit from 'p-limit'
@@ -33,11 +34,19 @@ async function openverseSetup(){
 openverseSetup()
 
 
-
+//DB and Jobs
 connectDB()
+connectAgenda()
+
 //App
 const app = express();
 const PORT = process.env.PORT || 3000
+
+// Router imports
+import postRoutes from './routes/posts'
+
+//Use Routes
+app.use('/posts',postRoutes)
 
 app.use(express.json())
 app.use(logger('dev'))
@@ -110,7 +119,7 @@ async function test(){
     }
 }
 
-test()
+// test()
 
 
 
