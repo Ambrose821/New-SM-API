@@ -5,6 +5,7 @@ import logger from 'morgan'
 //import cookieParser from 'cookie-parser'
 import session from 'express-session'
 import path from 'path'
+import cors from 'cors'
 
 
 //My Stuff
@@ -41,6 +42,13 @@ connectAgenda()
 //App
 const app = express();
 const PORT = process.env.PORT || 3000
+
+//cors 
+const corsOptions = {
+    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+}
+app.use(cors(corsOptions));
+
 
 // Router imports
 import postRoutes from './routes/posts'

@@ -1,5 +1,13 @@
 import type { Post } from "@/types";
 
+export interface pageProps{
+    pages:number,
+    limit:number,
+    currentPage:number,
+    totalPages:number,
+    maxDisplayedPages:number,
+    onPageChange:(page:number)=>void
+}
 export default function PostCard({ post }: { post: Post }){
 
     return(

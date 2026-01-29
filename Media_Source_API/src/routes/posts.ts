@@ -39,8 +39,16 @@ router.get('/', async (req,res)=>{
         const posts = await Post.find(filter)
             .sort(sortBy)
             .skip(page * limit)
-            .limit(limit);
+            .limit(limit).select('-__v').lean();
         res.status(200).json(posts);
+    }catch(error){
+        res.status(500).json({message: 'Error fetching posts', error});
+    }
+})
+
+router.get('/genres', (req,res)=>{
+    try{
+        res.status(200).json({genres: GENRE_OPTIONS});
     }catch(error){
         res.status(500).json({message: 'Error fetching posts', error});
     }

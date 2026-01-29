@@ -1,4 +1,5 @@
 export interface Post{
+    _id: String|null|undefined,
     headline: String,
     description: String|null,
     thumbnailUrl: string |null // thumbnail is the actualy post if no video is provided
