@@ -17,6 +17,7 @@ import { getPosts,getGenres } from "@/util/api/posts";
 export default function Posts(){
 
 const PAGE_LIMIT = 1
+const POSTS_PER_PAGE = 12
 
 const [searchTerm, setSearchTerm] = useState<string>('');
 
@@ -32,11 +33,13 @@ const [filteredGenres,setFilteredGenres] = useState<Set<string>>(new Set())
 useEffect(() =>{
   const fetchGenresAndPosts = async () => {
     try {
+      const filteredGenresArray = Array.from(filteredGenres);
+      const genreParam = filteredGenresArray.length > 0 ? filteredGenresArray.join(',') : 'all';
       const genresData = await getGenres();
-      const postsData = await getPosts(page,12,searchTerm,'sourcedAt','all','any');
+      const postsData = await getPosts(page, POSTS_PER_PAGE, searchTerm,'sourcedAt',genreParam,'any');
       setGenres(genresData);
-      setDisplayedPosts(postsData);
-      setPages(postsData.length); // Placeholder until API provides total count
+      setDisplayedPosts(postsData.posts);
+      setPages(Math.ceil(postsData.numberOfPosts/POSTS_PER_PAGE)); 
     } catch (error) {
       console.error('Error fetching genres:', error);
     }
@@ -87,7 +90,7 @@ const toggleGenre = (genre: string,checked : boolean)=>{
             <div className="sm:ml-auto">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="inline-flex items-center gap-2">
+                  <Button variant="outline" className="inline-flex items-center gap-2 border border-gray-">
                     Genre <ChevronDown className="size-4" />
                   </Button>
                 </DropdownMenuTrigger>

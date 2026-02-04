@@ -2,8 +2,9 @@ import express from 'express';
 const router = express.Router();
 import Post from '../models/post';
 
-
+// TODO Genres should be dynamic based on DB entries
 const GENRE_OPTIONS = ['news','politics','sports','memes','humour','finance','crypto','viral'];
+
 router.get('/', async (req,res)=>{
     try{
         const page = Math.max(0, parseInt(req.query.page as string)-1 || 0);
@@ -40,7 +41,17 @@ router.get('/', async (req,res)=>{
             .sort(sortBy)
             .skip(page * limit)
             .limit(limit).select('-__v').lean();
-        res.status(200).json(posts);
+
+       const numberOfPosts = await Post.countDocuments(filter)
+
+       const responseData =  {
+            posts: posts,
+            numberOfPosts: numberOfPosts
+        }
+
+        console.log('Response Data posts size', posts.length);
+        console.log('Total posts with filter', numberOfPosts);
+        res.status(200).json(responseData);
     }catch(error){
         res.status(500).json({message: 'Error fetching posts', error});
     }
