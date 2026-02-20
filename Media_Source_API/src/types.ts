@@ -1,4 +1,5 @@
 export type Genre = 'news' | 'politics' | 'sports' | 'memes' | 'humour' | 'finance' | 'crypto' | 'viral'
+export type Platform = 'twitter' | 'facebook' | 'instagram' | 'tiktok' | 'linkedin'
 
 export interface Media{
     headline: String,
@@ -76,4 +77,10 @@ export interface RenderResponse{
     video: String |null,
     thumbnail: String|null,
     details:String|null
+}
+
+export interface SocialAccount{
+    platform: Platform,
+    handle: String,
+    instagramId: String|null,
 }
