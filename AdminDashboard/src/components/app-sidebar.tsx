@@ -19,7 +19,7 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
 import { SignOutButton, UserButton } from "@clerk/clerk-react"
-import { ChevronsUpDown, GalleryVerticalEnd, LogOut, User,ImageUp } from "lucide-react";
+import { ChevronsUpDown, GalleryVerticalEnd, LogOut, User,ImageUp, MessageCircleCode  } from "lucide-react";
 import {useAuth,useUser,useClerk} from "@clerk/clerk-react"
 
 export function AppSidebar() {
@@ -30,6 +30,11 @@ export function AppSidebar() {
             icon:ImageUp
 
         },
+        {
+          title: "Socials",
+          path:"/dashboard/socials",
+          icon:MessageCircleCode
+        }
     ]
 
   return (
