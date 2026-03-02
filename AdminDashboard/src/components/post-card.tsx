@@ -26,15 +26,16 @@ export default function PostCard({ post }: { post: Post }){
             <div className="text-xs min-h-8">
                 <span className="line-clamp-2">{post.description}</span>
             </div>
-            <div className=" flex-wrap flex flex-row items-start content-center"> 
+            <div className="flex-wrap flex flex-row items-start content-center m-1"> 
                 {post.genre.map((genre)=>(
-                    <div className="text-xs w-auto m-1 rounded-lg border">{genre}</div>
+                    <div className="text-xs w-auto m-1 rounded-lg border p-1">{genre}</div>
                 ))}
             </div>
-            <div className="=2">
-                <button>Full Post</button>
-            </div>
 
+            <div className="flex flex-row justify-between m-2.5">
+                 <button>Full Post</button>
+                 <button className="text-white bg-black">Post Now</button>
+            </div>
         </div>
         </>
     );
