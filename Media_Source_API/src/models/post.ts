@@ -30,7 +30,7 @@ const postSchema = new Schema<Post>({
     },
     genre:{
         type:[String],
-        enum:['news','politics','sports','memes','humour','finance','crypto','viral'],
+        enum:['news','politics','sports','memes','humour','finance','crypto','viral', 'tech'],
         default: ['viral']
     },
     imageAttributions:{

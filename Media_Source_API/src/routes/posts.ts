@@ -3,7 +3,7 @@ const router = express.Router();
 import Post from '../models/post';
 
 // TODO Genres should be dynamic based on DB entries
-const GENRE_OPTIONS = ['news','politics','sports','memes','humour','finance','crypto','viral'];
+const GENRE_OPTIONS = ['news','politics','sports','memes','humour','finance','crypto','viral','tech'];
 
 router.get('/', async (req,res)=>{
     try{

@@ -7,12 +7,12 @@ const PLATFORM_OPTIONS = ['twitter','facebook','instagram','tiktok','linkedin']
 router.get('/', async (req,res) =>{
     try{
         const searchedHandle = req.query.handle as string | '';
-        const platformQuery = req.query.platform as string | 'all';
-        let plaroformFilter : string[];
-        platformQuery === 'all' ? plaroformFilter = PLATFORM_OPTIONS : plaroformFilter = platformQuery.split(',') as string[];
+        const platformQuery = req.query.platforms as string | 'all';
+        let platformFilter : string[];
+        platformQuery === 'all' ? platformFilter = PLATFORM_OPTIONS : platformFilter = platformQuery.split(',') as string[];
 
         const filter = {
-            platform : {$in: plaroformFilter},
+            platform : {$in: platformFilter},
             handle : {$regex: searchedHandle, $options: 'i'}
         }
 
@@ -34,14 +34,14 @@ router.get('/platforms', (req,res)=>{
 
 router.post('/instagram', async (req, res) =>{
     try{
-        const {handle, instagramId} = req.body as {handle: string, instagramId: string};
-        if(!handle || !instagramId){
+        const {handle, facebookId} = req.body as {handle: string, facebookId: string};
+        if(!handle || !facebookId){
             return res.status(400).json({message: 'Both Handle and Instagram ID are required'})
         }
         const newAccount = new SocialAccount(
             {platform: 'instagram',
             handle: handle,
-            instagramId: instagramId
+            instagramId: facebookId
         })
     }catch(error){
         res.status(500).json({message: 'Error creating social account', error});

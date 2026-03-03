@@ -18,7 +18,6 @@ const get_meta_app_secrets:any = async () => {
   app_id= app_id.FACEBOOK_APP_ID
   let app_secret = await getSecretValue("FACEBOOK_APP_SECRET")
   app_secret = app_secret.FACEBOOK_APP_SECRET
-  console.log(typeof app_id, app_secret)
   return {app_id, app_secret}
 }
 

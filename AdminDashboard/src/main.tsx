@@ -11,6 +11,7 @@ import DashboardHome from './components/dashboard-home.tsx'
 
 import Posts from './pages/posts.tsx'
 import Socials from './pages/socials.tsx'
+import { Toaster } from '@/components/ui/sonner'
 // Import your Publishable Key
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
 
@@ -22,6 +23,7 @@ if (!PUBLISHABLE_KEY) {
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+      <Toaster />
       <BrowserRouter>
         <Routes>
           <Route path='/' element={<UnAuthenticated />} />

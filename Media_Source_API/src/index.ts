@@ -34,7 +34,7 @@ async function openverseSetup(){
 }
 openverseSetup()
 
-
+//Meta token handling 
 scheduleMetaTokenRefresh();
 
 
@@ -117,7 +117,7 @@ const llmCli = new LLMClient(new GeminiLLMAgent());
 
 
 //Test pipeline 
-const runner = new PipelineRunner(new Sourcer(new rssAppStrategy()),new LLMClient(new GeminiLLMAgent()),new MediaEditingClient(new simpleMediaEditingAgent()),'https://rss.app/feeds/tt9zcrPi3NtixMvz.xml',['politics']);
+const runner = new PipelineRunner(new Sourcer(new rssAppStrategy()),new LLMClient(new GeminiLLMAgent()),new MediaEditingClient(new simpleMediaEditingAgent()),'https://rss.app/feeds/tT8TYNRQeCtB9JiX.xml',['tech']);
 
 
 
@@ -133,8 +133,7 @@ async function test(){
       console.log("Test pipeline error: ",err)
     }
 }
-
-//test()
+ //test()
 
 
 

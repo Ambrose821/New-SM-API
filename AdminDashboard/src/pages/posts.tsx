@@ -48,11 +48,6 @@ useEffect(() =>{
 },[searchTerm,filteredGenres,page])
 
 
-
-useEffect(()=>{
-  
-},[])
-
 const toggleGenre = (genre: string,checked : boolean)=>{
   setFilteredGenres(prev=>{
      const next = new Set(prev);

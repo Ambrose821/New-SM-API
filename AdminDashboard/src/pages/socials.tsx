@@ -13,6 +13,7 @@ import { ChevronDown, Instagram, Facebook, Twitter, Linkedin, Youtube, Globe } f
 import { SocialCard } from "@/components/Socials/SocialCard";
 import { useNavigate } from "react-router";
 import {AddSocialDialog}from "@/components/Socials/AddSocialDialog"
+import { getSocialPlatforms, getSocials, createInstagramAccount } from "@/util/api/socials";
 
 
 const platform_icons = {
@@ -46,9 +47,8 @@ export default function Socials(){
 const [searchTerm, setSearchTerm] = useState<string>('');
 const [platforms, setPlatforms] = useState<string[]>([])
 const [filteredPlatforms,setFilteredPlatforms] = useState<Set<string>>(new Set())
-const [displayedSocials, setDisplayedSocials] = useState<SocialAccount[]>([])
-const navigate = useNavigate()
-
+const [searchHandle,setSearchHandle] = useState<string>('')
+const [socialAccounts, setSocialAccounts] = useState<SocialAccount[]>([])
 const togglePlatforms = (platform: string,checked : boolean)=>{
   setFilteredPlatforms(prev=>{
      const next = new Set(prev);
@@ -57,6 +57,26 @@ const togglePlatforms = (platform: string,checked : boolean)=>{
       return next;
   })
 }
+
+
+useEffect(() =>{
+  const fetchSocialsAndPlatform = async () => {
+    try {
+      const filteredPlatformsArray = Array.from(filteredPlatforms);
+      const plaftormParam = filteredPlatformsArray.length > 0 ? filteredPlatformsArray.join(',') : 'all'; 
+      const platformData = await getSocialPlatforms();
+      const socialsData = await getSocials(plaftormParam,searchHandle)
+      setPlatforms(platformData)
+      // setSocialAccounts(socialsData.socialAccounts)    
+    } catch (error) {
+      console.error('Error fetching genres:', error);
+    }
+  };
+  fetchSocialsAndPlatform();
+},[searchTerm,filteredPlatforms,])
+
+
+
  return (
 
         <div className="h-full grid grid-rows-[auto_1fr_auto]">
@@ -74,15 +94,15 @@ const togglePlatforms = (platform: string,checked : boolean)=>{
                     </svg>
                   </span>
                   <input
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(e) => setSearchHandle(e.target.value)}
                     className="w-full border rounded-lg py-2.5 pl-10 pr-3 outline-none "
                     type="text"
-                    placeholder="Search posts by keywords (headline + description)"
+                    placeholder="Search by social handle"
                   />
                 </div>
                       
                 <div className="flex flex-row gap-7 sm:ml-auto">
-                  <AddSocialDialog/>
+                  <AddSocialDialog platforms={platforms}/>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="outline" className="inline-flex items-center gap-2 border border-gray-">
@@ -111,7 +131,7 @@ const togglePlatforms = (platform: string,checked : boolean)=>{
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
       
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
-                {social_accounts.map((social) => (
+                {socialAccounts.map((social) => (
                   <div key={social.handle} className="flex">
                     <SocialCard social={social}/>
                   </div>

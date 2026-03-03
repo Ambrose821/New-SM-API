@@ -1,4 +1,4 @@
-export type Genre = 'news' | 'politics' | 'sports' | 'memes' | 'humour' | 'finance' | 'crypto' | 'viral'
+export type Genre = 'news' | 'politics' | 'sports' | 'memes' | 'humour' | 'finance' | 'crypto' | 'viral' | 'tech'
 export type Platform = 'twitter' | 'facebook' | 'instagram' | 'tiktok' | 'linkedin'
 
 export interface Media{
