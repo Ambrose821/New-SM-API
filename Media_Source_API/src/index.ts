@@ -52,6 +52,10 @@ const corsOptions = {
     origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
 }
 app.use(cors(corsOptions));
+app.use(express.json())
+app.use(logger('dev'))
+app.use(express.urlencoded({extended:false}))
+app.use(express.static(path.join(__dirname,'../public')));
 
 
 // Router imports
@@ -62,11 +66,6 @@ import socialAccountsRouter from './routes/socialAccounts'
 //Use Routes
 app.use('/posts',postRoutes)
 app.use('/socials',socialAccountsRouter)
-
-app.use(express.json())
-app.use(logger('dev'))
-app.use(express.urlencoded({extended:false}))
-app.use(express.static(path.join(__dirname,'../public')));
 
 app.use(session({
     secret: 'keyboard cat',

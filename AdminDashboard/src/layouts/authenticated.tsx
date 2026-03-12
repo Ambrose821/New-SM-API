@@ -4,6 +4,7 @@ import { useAuth,UserButton,SignOutButton } from "@clerk/clerk-react";
 
 import { SidebarProvider,SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
+import { TargetSocialProvider } from "@/providers/TargetSocialProvider";
 
 export default function Authenticated(){
 
@@ -21,6 +22,7 @@ export default function Authenticated(){
         <div className="min-h-dvh bg-white flex" >
             <SidebarProvider>
             <AppSidebar />
+            <TargetSocialProvider>
             <main className="flex-1 min-h-dvh overlow-hidden">
                 <div className="p-4">
                 <SidebarTrigger className="text-foreground"/>
@@ -29,6 +31,7 @@ export default function Authenticated(){
                 <Outlet />
                 </div>
             </main>
+            </TargetSocialProvider>
             </SidebarProvider>
             
         </div>

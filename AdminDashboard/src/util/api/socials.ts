@@ -3,7 +3,7 @@ import api from '../api/api';
 export const getSocials = async (platforms:string,handle:string ) =>{
     try{
         const response = await api.get('/socials',{params:{platforms,handle}});
-        return response.data.socials;
+        return response.data.socialAccounts;
     }catch(error){
         console.error("Error fetching socials:", error);
         throw error;
@@ -20,13 +20,12 @@ export const getSocialPlatforms = async () =>{
     }
 }
 
-export const createInstagramAccount = async (handle: string, instagramId: string) =>{
+export const createInstagramAccount = async (handle: string, facebookId: string) =>{
     try{
-        const response = await api.post('/socials/instagram',{handle, instagramId});
+        const response = await api.post('/socials/instagram',{handle, facebookId});
         return response.data;
     }catch(error){
         console.error("Error creating Instagram account:", error);
         throw error;
     }
 }
-

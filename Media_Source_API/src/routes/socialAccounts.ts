@@ -1,6 +1,8 @@
 import express from 'express'
 const router = express.Router();
 import SocialAccount from '../models/socialAccount';
+import {get_instagram_id} from '../services/Socials/meta/metaAuth';
+
 
 const PLATFORM_OPTIONS = ['twitter','facebook','instagram','tiktok','linkedin']
 
@@ -34,15 +36,27 @@ router.get('/platforms', (req,res)=>{
 
 router.post('/instagram', async (req, res) =>{
     try{
-        const {handle, facebookId} = req.body as {handle: string, facebookId: string};
+        const {handle, facebookId} = req.body as {handle?: string, facebookId?: string};
         if(!handle || !facebookId){
             return res.status(400).json({message: 'Both Handle and Instagram ID are required'})
         }
-        const newAccount = new SocialAccount(
-            {platform: 'instagram',
+        const instagramId = await get_instagram_id(facebookId);
+        if(!instagramId){
+            return res.status(400).json({message: 'Invalid Facebook Page ID or no associated Instagram account found'})
+        }
+
+        // Check if the account already exists
+        const existingAccount = await SocialAccount.findOne({instagramId: instagramId}).lean();
+        if(existingAccount){
+            return res.status(400).json({message: `Instagram account ${handle} already exists`});
+        }
+        const newAccount = new SocialAccount({
+            platform: 'instagram',
             handle: handle,
-            instagramId: facebookId
+            instagramId: instagramId
         })
+        await newAccount.save();
+        res.status(201).json(newAccount);
     }catch(error){
         res.status(500).json({message: 'Error creating social account', error});
     }

@@ -22,12 +22,17 @@ const get_meta_app_secrets:any = async () => {
 }
 
 const get_meta_current_token:any = async () => {
-  const token = await getSecretValue("GRAPH_ACCESS_TOKEN")
-  return token.GRAPH_ACCESS_TOKEN
+  const secret = await getSecretValue("GRAPH_ACCESS_TOKEN")
+
+  if (typeof secret === "string") {
+    return secret.trim()
+  }
+
+  return secret?.GRAPH_ACCESS_TOKEN?.trim()
 }
 
 const set_meta_current_token:any = async (token:string) => {
-  await upsertSecret("GRAPH_ACCESS_TOKEN", token)
+  await upsertSecret("GRAPH_ACCESS_TOKEN", { GRAPH_ACCESS_TOKEN: token.trim() })
 }
 
 export const get_graph_long_token = async () => {
@@ -38,8 +43,8 @@ export const get_graph_long_token = async () => {
  
   const url =
     base_graph_url +
-    `oauth/access_token?grant_type=fb_exchange_token&client_id=${app_id}&client_secret=${app_secret}&fb_exchange_token=${token}`
-    console.log(url)
+    `oauth/access_token?grant_type=fb_exchange_token&client_id=${encodeURIComponent(app_id)}&client_secret=${encodeURIComponent(app_secret)}&fb_exchange_token=${encodeURIComponent(token)}`
+
   try {
     const response = await axios.get(url)
 
@@ -59,11 +64,20 @@ export const get_graph_long_token = async () => {
 
 //Takes a facebook page id which can be obtained manually from any business facebook page, or through OAuth services.
 //If an instagram account is associated to that page, the function will return that accounts instagram id which will allow graph api calls for that account
-export const get_instagram_id = async (facebook_page_id:string, access_token:string) => {
+export const get_instagram_id = async (facebook_page_id:string) => {
+  const access_token = await get_meta_current_token()
+
+  if (!access_token) {
+    console.error("Meta access token is missing or malformed")
+    return null
+  }
+
   const url =
     base_graph_url +
-    `${facebook_page_id}?fields=instagram_business_account&access_token=${access_token}`
+    `${encodeURIComponent(facebook_page_id)}?fields=instagram_business_account&access_token=${encodeURIComponent(access_token)}`
+
   try {
+
     const response = await axios.get(url)
 
     const instagram_id = response.data.instagram_business_account.id

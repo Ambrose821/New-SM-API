@@ -1,4 +1,4 @@
-import type { SocialAccount, InstagramAccount } from "@/types";
+import type { SocialAccount } from "@/types";
 
 import { useEffect, useState } from "react";
 
@@ -11,9 +11,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { ChevronDown, Instagram, Facebook, Twitter, Linkedin, Youtube, Globe } from "lucide-react";
 import { SocialCard } from "@/components/Socials/SocialCard";
-import { useNavigate } from "react-router";
 import {AddSocialDialog}from "@/components/Socials/AddSocialDialog"
-import { getSocialPlatforms, getSocials, createInstagramAccount } from "@/util/api/socials";
+import { getSocialPlatforms, getSocials } from "@/util/api/socials";
 
 
 const platform_icons = {
@@ -25,26 +24,8 @@ const platform_icons = {
     "youtube": Youtube,
 } as const;
 
-const social_accounts: SocialAccount[] = [
-    {
-        handle: "test_account_1",
-        platform: "instagram",
-        icon: platform_icons["instagram"],
-        instagramId: "11111"
-    } as InstagramAccount,
-    {
-        handle: "test_account_2",
-        platform: "instagram",
-        icon: platform_icons.instagram,
-        instagramId: "22222"
-    } as InstagramAccount,
-]
-
-
-
 export default function Socials(){
 
-const [searchTerm, setSearchTerm] = useState<string>('');
 const [platforms, setPlatforms] = useState<string[]>([])
 const [filteredPlatforms,setFilteredPlatforms] = useState<Set<string>>(new Set())
 const [searchHandle,setSearchHandle] = useState<string>('')
@@ -67,13 +48,18 @@ useEffect(() =>{
       const platformData = await getSocialPlatforms();
       const socialsData = await getSocials(plaftormParam,searchHandle)
       setPlatforms(platformData)
-      // setSocialAccounts(socialsData.socialAccounts)    
+      setSocialAccounts(
+        socialsData.map((social: { handle: string; platform: SocialAccount["platform"] }) => ({
+          ...social,
+          icon: platform_icons[social.platform],
+        }))
+      )
     } catch (error) {
       console.error('Error fetching genres:', error);
     }
   };
   fetchSocialsAndPlatform();
-},[searchTerm,filteredPlatforms,])
+},[filteredPlatforms, searchHandle])
 
 
 

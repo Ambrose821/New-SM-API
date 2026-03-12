@@ -1,4 +1,3 @@
-import { ChevronsUpDown, GalleryVerticalEnd, LogOut, User,ImageUp, MessageCircleCode  } from "lucide-react";
 
 export interface Post{
     _id: String|null|undefined,
@@ -26,4 +25,9 @@ export interface SocialAccount {
 export interface InstagramAccount extends SocialAccount {
     instagramId: string;
     platform: 'instagram';
+}
+
+export type TargetSocialContextType ={
+    socalAccount: SocialAccount | null;
+    setSocialAccount: (account: SocialAccount | null) => void;
 }
