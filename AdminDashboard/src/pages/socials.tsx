@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronDown, Instagram, Facebook, Twitter, Linkedin, Youtube, Globe } from "lucide-react";
 import { SocialCard } from "@/components/Socials/SocialCard";
 import {AddSocialDialog}from "@/components/Socials/AddSocialDialog"
+
 import { getSocialPlatforms, getSocials } from "@/util/api/socials";
 
 
@@ -30,6 +31,7 @@ const [platforms, setPlatforms] = useState<string[]>([])
 const [filteredPlatforms,setFilteredPlatforms] = useState<Set<string>>(new Set())
 const [searchHandle,setSearchHandle] = useState<string>('')
 const [socialAccounts, setSocialAccounts] = useState<SocialAccount[]>([])
+
 const togglePlatforms = (platform: string,checked : boolean)=>{
   setFilteredPlatforms(prev=>{
      const next = new Set(prev);
