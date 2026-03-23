@@ -1,0 +1,27 @@
+services:
+  media_source:
+    #Where dat docker file
+    build: ./Media_Source_API
+    container_name: media_source_api
+
+    env_file:
+      - path: ./Media_Source_API/.env
+    depends_on:
+      - cache
+
+  cache:
+    image: redis:7.4-alpine
+    restart: always
+    ports:
+    - "6379:6379"
+    command: redis-server --save 20 1 --loglevel warning
+    volumes:
+      - cache:/data
+  
+volumes:
+    cache:
+      driver: local
+    
+  
+
+  # More to come with media editing and Admin Dashboard
