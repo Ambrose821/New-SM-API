@@ -51,7 +51,7 @@ useEffect(() =>{
       const socialsData = await getSocials(plaftormParam,searchHandle)
       setPlatforms(platformData)
       setSocialAccounts(
-        socialsData.map((social: { handle: string; platform: SocialAccount["platform"] }) => ({
+        socialsData.map((social: { _id: string; handle: string; platform: SocialAccount["platform"] }) => ({
           ...social,
           icon: platform_icons[social.platform],
         }))
@@ -120,7 +120,7 @@ useEffect(() =>{
       
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
                 {socialAccounts.map((social) => (
-                  <div key={social.handle} className="flex">
+                  <div key={String(social._id ?? social.handle)} className="flex">
                     <SocialCard social={social}/>
                   </div>
                 ))}

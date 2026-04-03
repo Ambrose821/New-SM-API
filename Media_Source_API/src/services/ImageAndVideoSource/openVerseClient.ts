@@ -1,10 +1,11 @@
 import axios from "axios";
 import { OpenverseTokenHandler } from "./openVerseAuth";
 import { ImageData } from "../../types";
+import { ImageSourceRequest, ImageSourceStrategy } from "./imageSourceStrategy";
 
 //For getting public Domain and creative commons images from the openverse API,
 //See API spec here https://api.openverse.org/v1/#tag/images/operation/images_detail
-export class OpenverseClient{
+export class OpenverseClient implements ImageSourceStrategy{
 
     public constructor(){
 
@@ -44,9 +45,13 @@ export class OpenverseClient{
 
     }
 
-    public async getImagesFromKeyWord(quantity: number = 1,keyword: string ): Promise<ImageData | null> {
-   
-     
+    public async fetchImages(request: ImageSourceRequest): Promise<ImageData[]> {
+        if (!request.keywords?.length) {
+            throw new Error("OpenverseClient requires a keywords array request");
+        }
+
+        const quantity = request.quantity ?? 1;
+        const keyword = request.keywords[0];
         const url = `https://api.openverse.org/v1/images/?q=${encodeURI(keyword)}&license=pdm,cc0,by,by-sa&categories=photograph&page_size=1&page=1`
         console.log(url)
         const currentAccessToken = await OpenverseTokenHandler.getInstance().getCurrentAccessToken()
@@ -59,15 +64,18 @@ export class OpenverseClient{
             }
             
         })
-        if(response.data.results?.[0].url && response.data.results?.[0].attribution){
-            return {
-                url: response.data.results?.[0].url,
-                attribution: response.data.results?.[0].attribution,
-                keyword: keyword
-            } as ImageData
-        }else{
-            return null;
-        }
+        const results = response.data.results ?? [];
+
+        return results
+            .slice(0, quantity)
+            .filter((result: any) => result?.url)
+            .map((result: any) => {
+                return {
+                    url: result.url,
+                    attribution: result.attribution ?? null,
+                    keyword: keyword
+                } as ImageData
+            });
 
         
 

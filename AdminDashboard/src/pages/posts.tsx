@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
 import Paginator from "@/components/Paginator/paginator";
-import { getPosts,getGenres } from "@/util/api/posts";
+import { getPosts,getGenres,publishPosts } from "@/util/api/posts";
 import { getSocials } from "@/util/api/socials";
 import { useTargetSocial } from "@/hooks/use-target-social";
 import {
@@ -53,8 +53,8 @@ const [selectedPostIds, setSelectedPostIds] = useState<Set<string>>(new Set())
 const [socialAccounts, setSocialAccounts] = useState<SocialAccount[]>([])
 const [isPostNowDialogOpen, setIsPostNowDialogOpen] = useState(false)
 const [isBulkTargetDialogOpen, setIsBulkTargetDialogOpen] = useState(false)
-const [selectedPostingAccountHandle, setSelectedPostingAccountHandle] = useState("")
-const [selectedTargetAccountHandle, setSelectedTargetAccountHandle] = useState("")
+const [selectedPostingAccountId, setSelectedPostingAccountId] = useState("")
+const [selectedTargetAccountId, setSelectedTargetAccountId] = useState("")
 const [pendingPost, setPendingPost] = useState<Post | null>(null)
 const [fullPost, setFullPost] = useState<Post | null>(null)
 const [isConfirmingPostNow, setIsConfirmingPostNow] = useState(false)
@@ -129,7 +129,7 @@ const handleTargetPostSelection = (postId: string, checked: boolean) => {
 
 const handlePostNowClick = (post: Post) => {
   setPendingPost(post)
-  setSelectedPostingAccountHandle("")
+  setSelectedPostingAccountId("")
   setIsConfirmingPostNow(false)
   setIsPostNowDialogOpen(true)
 }
@@ -138,22 +138,28 @@ const handleViewFullPost = (post: Post) => {
   setFullPost(post)
 }
 
-const handleConfirmPostNow = () => {
-  if (!pendingPost || !selectedPostingAccountHandle) {
+const handleConfirmPostNow = async () => {
+  if (!pendingPost?._id || !selectedPostingAccountId) {
     return
   }
 
-  toast.message(`Confirmed post for ${selectedPostingAccountHandle}`, {
-    description: `Wire your posting action here for "${pendingPost.headline}".`,
+  const success = await publishPosts([String(pendingPost._id)], selectedPostingAccountId)
+  if (!success) {
+    toast.error("Failed to queue post for publishing")
+    return
+  }
+
+  toast.success(`Queued post for ${selectedAccount?.handle}`, {
+    description: `"${pendingPost.headline}" was added to the publish queue.`,
   })
   setIsPostNowDialogOpen(false)
   setPendingPost(null)
-  setSelectedPostingAccountHandle("")
+  setSelectedPostingAccountId("")
   setIsConfirmingPostNow(false)
 }
 
 const handleOpenBulkTargetDialog = () => {
-  setSelectedTargetAccountHandle(targetSocial?.handle ?? "")
+  setSelectedTargetAccountId(targetSocial?._id ? String(targetSocial._id) : "")
   setIsConfirmingBulkPost(targetSocial !== null)
   setIsBulkTargetDialogOpen(true)
 }
@@ -162,7 +168,7 @@ const handleClosePostNowDialog = (open: boolean) => {
   setIsPostNowDialogOpen(open)
   if (!open) {
     setPendingPost(null)
-    setSelectedPostingAccountHandle("")
+    setSelectedPostingAccountId("")
     setIsConfirmingPostNow(false)
   }
 }
@@ -170,13 +176,13 @@ const handleClosePostNowDialog = (open: boolean) => {
 const handleCloseBulkTargetDialog = (open: boolean) => {
   setIsBulkTargetDialogOpen(open)
   if (!open) {
-    setSelectedTargetAccountHandle("")
+    setSelectedTargetAccountId("")
     setIsConfirmingBulkPost(false)
   }
 }
 
 const handleContinueToConfirm = () => {
-  if (!selectedPostingAccountHandle) {
+  if (!selectedPostingAccountId) {
     return
   }
   setIsConfirmingPostNow(true)
@@ -184,7 +190,7 @@ const handleContinueToConfirm = () => {
 
 const handleSetTargetSocial = () => {
   const selectedTargetAccount = socialAccounts.find(
-    (account) => account.handle === selectedTargetAccountHandle
+    (account) => String(account._id) === selectedTargetAccountId
   )
 
   if (!selectedTargetAccount) {
@@ -195,21 +201,26 @@ const handleSetTargetSocial = () => {
   setIsConfirmingBulkPost(true)
 }
 
-const handleConfirmBulkPost = () => {
+const handleConfirmBulkPost = async () => {
   const selectedTargetAccount = socialAccounts.find(
-    (account) => account.handle === selectedTargetAccountHandle
+    (account) => String(account._id) === selectedTargetAccountId
   ) ?? targetSocial
 
-  if (!selectedTargetAccount || selectedPostIds.size === 0) {
+  if (!selectedTargetAccount?._id || selectedPostIds.size === 0) {
     return
   }
 
-  toast.message(`Ready to post ${selectedPostIds.size} item(s) for ${selectedTargetAccount.handle}`, {
-    description: "Wire your batch posting action here.",
-  })
+  const success = await publishPosts(Array.from(selectedPostIds), String(selectedTargetAccount._id))
+  if (!success) {
+    toast.error("Failed to queue selected posts for publishing")
+    return
+  }
+
+  toast.success(`Queued ${selectedPostIds.size} item(s) for ${selectedTargetAccount.handle}`)
   setIsBulkTargetDialogOpen(false)
-  setSelectedTargetAccountHandle("")
+  setSelectedTargetAccountId("")
   setIsConfirmingBulkPost(false)
+  setSelectedPostIds(new Set())
 }
 
 const handleBulkPostCancel = () => {
@@ -218,10 +229,10 @@ const handleBulkPostCancel = () => {
 }
 
 const selectedAccount = socialAccounts.find(
-  (account) => account.handle === selectedPostingAccountHandle
+  (account) => String(account._id) === selectedPostingAccountId
 )
 const selectedBulkAccount = socialAccounts.find(
-  (account) => account.handle === selectedTargetAccountHandle
+  (account) => String(account._id) === selectedTargetAccountId
 ) ?? targetSocial
 
   return (
@@ -356,14 +367,14 @@ const selectedBulkAccount = socialAccounts.find(
           </DialogHeader>
           {!isConfirmingPostNow ? (
             <div className="py-2">
-              <Select value={selectedPostingAccountHandle} onValueChange={setSelectedPostingAccountHandle}>
+              <Select value={selectedPostingAccountId} onValueChange={setSelectedPostingAccountId}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select account" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
                     {socialAccounts.map((account) => (
-                      <SelectItem key={`${account.platform}-${account.handle}`} value={account.handle}>
+                      <SelectItem key={String(account._id)} value={String(account._id)}>
                         {account.handle}
                       </SelectItem>
                     ))}
@@ -404,7 +415,7 @@ const selectedBulkAccount = socialAccounts.find(
                 <Button
                   type="button"
                   onClick={handleContinueToConfirm}
-                  disabled={!selectedPostingAccountHandle}
+                  disabled={!selectedPostingAccountId}
                 >
                   Continue
                 </Button>
@@ -425,14 +436,14 @@ const selectedBulkAccount = socialAccounts.find(
           </DialogHeader>
           {!isConfirmingBulkPost ? (
             <div className="py-2">
-              <Select value={selectedTargetAccountHandle} onValueChange={setSelectedTargetAccountHandle}>
+              <Select value={selectedTargetAccountId} onValueChange={setSelectedTargetAccountId}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select account" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
                     {socialAccounts.map((account) => (
-                      <SelectItem key={`${account.platform}-${account.handle}-bulk`} value={account.handle}>
+                      <SelectItem key={`${String(account._id)}-bulk`} value={String(account._id)}>
                         {account.handle}
                       </SelectItem>
                     ))}
@@ -483,7 +494,7 @@ const selectedBulkAccount = socialAccounts.find(
                 <Button
                   type="button"
                   onClick={handleSetTargetSocial}
-                  disabled={!selectedTargetAccountHandle}
+                  disabled={!selectedTargetAccountId}
                 >
                   Continue
                 </Button>

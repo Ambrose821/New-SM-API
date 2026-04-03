@@ -10,7 +10,8 @@ const socialAccountSchema = new Schema<SocialAccount>({
     },
     handle:{
         type:String,
-        required:true
+        required:true,
+        unique:true
     },
     instagramId:{
         type:String,

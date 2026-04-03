@@ -21,7 +21,7 @@ const get_meta_app_secrets:any = async () => {
   return {app_id, app_secret}
 }
 
-const get_meta_current_token:any = async () => {
+export const get_meta_current_token:any = async () => {
   const secret = await getSecretValue("GRAPH_ACCESS_TOKEN")
 
   if (typeof secret === "string") {

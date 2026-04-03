@@ -1,7 +1,6 @@
 import axios from "axios"
-import { getSecretValue } from "../../../config/secrets-manager"
 import { Post } from "../../../types"
-
+import {get_meta_current_token} from "./metaAuth"
 const base_graph_url = `https://graph.facebook.com/v${process.env.GRAPH_API_VERSION}/`
 
 const buildCaption = (post: Post) => {
@@ -67,12 +66,24 @@ const getMediaArrayFromPost = (post: Post) => {
   return [mediaUrl]
 }
 
+const single_media_post_to_instagram = async (
+  instagram_id: string,
+  post: Post,
+  mediaUrlOverride?: string
+) => {
+  const creation_id = await get_instagram_creation_id(instagram_id, post, {
+    mediaUrlOverride,
+  })
+  return instagram_upload(instagram_id, creation_id)
+}
+
 const get_instagram_creation_id = async (
   instagram_id: string,
   post: Post,
   options?: { isCarouselItem?: boolean; mediaUrlOverride?: string }
 ) => {
-  const access_token = (await getSecretValue("GRAPH_ACCESS_TOKEN")) as string | ""
+  const access_token = await get_meta_current_token()
+
   const media = options?.mediaUrlOverride
     ? getMediaFromUrl(options.mediaUrlOverride)
     : getPrimaryMedia(post)
@@ -102,7 +113,7 @@ const get_instagram_creation_id = async (
 }
 
 const get_instagram_creation_id_status = async (creation_id: string) => {
-  const access_token = (await getSecretValue("GRAPH_ACCESS_TOKEN")) as string | ""
+  const access_token = await get_meta_current_token()
   const response = await axios.get(`${base_graph_url}${creation_id}`, {
     params: { access_token, fields: "status_code,status" },
   })
@@ -133,7 +144,7 @@ const creation_id_wait_for_ready = async (creation_id: string) => {
 }
 
 const instagram_upload = async (insta_id: string, creation_id: string) => {
-  const access_token = (await getSecretValue("GRAPH_ACCESS_TOKEN")) as string | ""
+  const access_token = await get_meta_current_token()
   const creation_id_ready = await creation_id_wait_for_ready(creation_id)
 
   if (creation_id_ready !== "FINISHED") {
@@ -149,11 +160,6 @@ const instagram_upload = async (insta_id: string, creation_id: string) => {
 
   console.log("Instagram Post Success:", response.data)
   return response.data
-}
-
-const single_post_to_instagram = async (instagram_id: string, post: Post) => {
-  const creation_id = await get_instagram_creation_id(instagram_id, post)
-  return instagram_upload(instagram_id, creation_id)
 }
 
 const get_carousel_creation_ids_string = async (
@@ -185,7 +191,7 @@ const get_carousel_container = async (
   post: Post,
   creation_ids_string: string
 ) => {
-  const access_token = (await getSecretValue("GRAPH_ACCESS_TOKEN")) as string | ""
+  const access_token = await get_meta_current_token()
   const response = await axios.post(`${base_graph_url}${instagram_id}/media`, null, {
     params: {
       access_token,
@@ -208,13 +214,13 @@ const carousel_post_to_instagram = async (
   return instagram_upload(instagram_id, carousel_container_id)
 }
 
-const post_to_instagram = async (instagram_id: string, post: Post, media_arr?: string[]) => {
+export const post_to_instagram = async (instagram_id: string, post: Post, media_arr?: string[]) => {
   try {
     const media_urls = media_arr && media_arr.length > 0 ? media_arr : getMediaArrayFromPost(post)
     const post_data =
       media_urls.length > 1
         ? await carousel_post_to_instagram(instagram_id, media_urls, post)
-        : await single_post_to_instagram(instagram_id, post)
+        : await single_media_post_to_instagram(instagram_id, post, media_urls[0])
 
     return { success: true, post_data }
   } catch (err: any) {
@@ -227,5 +233,3 @@ const post_to_instagram = async (instagram_id: string, post: Post, media_arr?: s
     return { success: false, post_data: null }
   }
 }
-
-module.exports = { post_to_instagram }

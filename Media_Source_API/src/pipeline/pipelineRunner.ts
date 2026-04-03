@@ -6,6 +6,7 @@ import { LLMAgent,GeminiLLMAgent } from '../services/AIServices/LLMAgent'
 import { LLMClient } from '../services/AIServices/LLMClient'
 import { OpenverseClient } from "../services/ImageAndVideoSource/openVerseClient";
 import PixabayClient from "../services/ImageAndVideoSource/pixaBayClient";
+import { ImageSourceRequest, ImageSourceStrategy } from "../services/ImageAndVideoSource/imageSourceStrategy";
 import { MediaEditingClient } from "../services/MediaEditing/MediaEditingClient";
 import { pipeLineSubscriber } from "./pipelineSubscribers/piplineSubscriber";
 
@@ -108,20 +109,34 @@ curl -X POST http://localhost:8000/render \
             if(!keywords){
                 throw new Error("Error in pipelineRunner: AI Agent did not generate any keywords")
             }
-           
-            const openverseCli = new OpenverseClient()
-            const pixabayCli = new PixabayClient()
-            const imageDataArr = await Promise.all(
-            keywords.map(async (word,index) => {
-                if(index ==0){
-                return await openverseCli.getImagesFromKeyWord(1, word as string);
-                }else if(index ==1){
-                    return await pixabayCli.getImagesFromKeyWord(1,word as string)
-                }else{
-                    return
+
+            const imageSourceStrategies: {
+                strategy: ImageSourceStrategy;
+                request: ImageSourceRequest;
+            }[] = [
+                {
+                    strategy: new OpenverseClient(),
+                    request: {
+                        quantity: 1,
+                        keywords: [keywords[0] as string]
+                    }
                 }
-            })
+            ];
+
+            if (keywords[1]) {
+                imageSourceStrategies.push({
+                    strategy: new PixabayClient(),
+                    request: {
+                        quantity: 1,
+                        text: keywords[1] as string
+                    }
+                });
+            }
+
+            const fetchedImageGroups = await Promise.all(
+                imageSourceStrategies.map(({ strategy, request }) => strategy.fetchImages(request))
             );
+            const imageDataArr = fetchedImageGroups.map((images) => images[0] ?? null);
 
           
          

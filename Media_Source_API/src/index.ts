@@ -116,7 +116,7 @@ const llmCli = new LLMClient(new GeminiLLMAgent());
 
 
 //Test pipeline 
-const runner = new PipelineRunner(new Sourcer(new rssAppStrategy()),new LLMClient(new GeminiLLMAgent()),new MediaEditingClient(new simpleMediaEditingAgent()),'https://rss.app/feeds/tT8TYNRQeCtB9JiX.xml',['tech']);
+const runner = new PipelineRunner(new Sourcer(new rssAppStrategy()),new LLMClient(new GeminiLLMAgent()),new MediaEditingClient(new simpleMediaEditingAgent()),'https://rss.app/feeds/t59EE8n2jTuYP8IM.xml',['tech']);
 
 
 

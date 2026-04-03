@@ -6,6 +6,8 @@ services:
 
     env_file:
       - path: ./Media_Source_API/.env
+    ports:
+      - "3000:3000"
     depends_on:
       - cache
 

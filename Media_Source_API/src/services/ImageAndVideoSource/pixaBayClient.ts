@@ -1,20 +1,26 @@
 //https://pixabay.com/api/videos/?key=51236781-3c0eafbf377319e6fd2341186&q=political+violence&pretty=true
 
 import axios from "axios";
-import { OpenverseTokenHandler } from "./openVerseAuth";
 
 import { ImageData } from "../../types";
+import { ImageSourceRequest, ImageSourceStrategy } from "./imageSourceStrategy";
 
-export default class PixabayClient{
+export default class PixabayClient implements ImageSourceStrategy{
 
    public constructor(){
 
     }
 
-     public async getImagesFromKeyWord(quantity: number = 1,keyword: string ): Promise<ImageData | null> {
-      
-        keyword=encodeURI(keyword)
-        const url = `https://pixabay.com/api/?key=${process.env.PIXPAY_API_KEY}&q=${keyword}&image_type=photo&order=popular`
+     public async fetchImages(request: ImageSourceRequest): Promise<ImageData[]> {
+        const quantity = request.quantity ?? 1;
+        const keyword = request.text ?? request.keywords?.[0];
+
+        if (!keyword) {
+            throw new Error("PixabayClient requires text or a keywords array request");
+        }
+
+        const encodedKeyword = encodeURI(keyword)
+        const url = `https://pixabay.com/api/?key=${process.env.PIXPAY_API_KEY}&q=${encodedKeyword}&image_type=photo&order=popular`
         console.log(url)
 
       
@@ -25,17 +31,17 @@ export default class PixabayClient{
           const img_data = {
              url: data.hits?.[0].largeImageURL,
             attribution:'',
-            keyword:keyword
+            keyword: encodedKeyword
           } as ImageData
-    
+
             console.log("====================================================== Large Image URL ===============================================================")
             console.log(img_data + "\n" +url)
-            return img_data
-          
-        
+            return [img_data]
+
+
         }else{
             console.log("====================================================== NULL Image URL ================================================================")
-            return null
+            return []
         }
     }
 }

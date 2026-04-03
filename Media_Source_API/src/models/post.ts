@@ -2,6 +2,18 @@ import {Schema,model} from 'mongoose'
 
 import{Post} from '../types'
 
+const hasRequiredMediaForType = function (this: Post) {
+    if (this.mediaType === 'Video') {
+        return Boolean(this.videoUrl)
+    }
+
+    if (this.mediaType === 'Image') {
+        return Boolean(this.thumbnailUrl)
+    }
+
+    return true
+}
+
 const postSchema = new Schema<Post>({
     headline:{
         type:String,
@@ -51,6 +63,15 @@ const postSchema = new Schema<Post>({
 
     },
 
+})
+
+postSchema.pre('validate', function(next) {
+    if (!hasRequiredMediaForType.call(this)) {
+        const missingField = this.mediaType === 'Video' ? 'videoUrl' : 'thumbnailUrl'
+        this.invalidate(missingField, `${missingField} is required when mediaType is ${this.mediaType}.`)
+    }
+
+    next()
 })
 
 export default model<Post>('postSchema',postSchema)

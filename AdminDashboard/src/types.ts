@@ -17,6 +17,7 @@ export interface Post{
 }
 
 export interface SocialAccount {
+    _id:String|null|undefined
     handle: string;
     platform: "instagram" | "twitter" | "facebook" | "tiktok" | "linkedin" | "youtube";
     icon: React.ComponentType<{ className?: string }>;
