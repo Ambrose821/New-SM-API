@@ -20,6 +20,7 @@ export async function createJob(job: PostJob){
         jobId: job.jobId,
         socialAccountId:job.socialAccountId,
         postId:job.postId,
+        status:'active'
     })
     await newJob.save()
 }

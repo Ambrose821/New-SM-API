@@ -9,7 +9,7 @@ export interface MediaEditingAgent{
 }
 
 export class simpleMediaEditingAgent implements MediaEditingAgent{
-        private apiURL = 'http://localhost:8000'
+        private apiURL = process.env.MEDIA_EDITOR_URL || 'http://localhost:8000'
 
         async getBasicImagePost(payLoad:RenderRequest):Promise<RenderResponse>{
 

@@ -10,12 +10,15 @@ interface PostingJobData {
     socialAccountId: string
 }
 
-const connection = new IORedis({maxRetriesPerRequest:null}); // Defaults connection to localHost 6379
+const connection = new IORedis({
+    host: process.env.REDIS_HOST || 'cache',
+    port: Number(process.env.REDIS_PORT || 6379),
+    maxRetriesPerRequest:null
+});
 
 const postingQueue = new Queue<PostingJobData>('posting', {
    connection
 });
-
 
 // TODO Make platform agnostic.
 const postWorker = new Worker<PostingJobData>('posting', async job => {
@@ -54,14 +57,12 @@ const postWorker = new Worker<PostingJobData>('posting', async job => {
 },{connection});
 
 postWorker.on('completed',async (job) =>{
-    const status = await job.getState()
-    await updateJob(job.id!,status)
+    await updateJob(job.id!,'completed')
     
 })
 
 postWorker.on('failed',async (job,err) =>{
-    const status = await job!.getState()
-    await updateJob(job!.id!,status,err.message)
+    await updateJob(job!.id!,'failed',err.message)
     await job!.remove()
 })
 
@@ -81,8 +82,7 @@ export const postProducer = async (jobData: PostingJobData) =>{
         socialAccountId,
         postId
     } as PostJob)
-
+    return job
 }
-
 
 

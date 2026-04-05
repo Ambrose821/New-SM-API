@@ -103,11 +103,21 @@ curl -X POST http://localhost:8000/render \
             const promptStr = mediaObj.headline + " " + mediaObj.textSnippet;
 
             const newsContent = await this.llmCli.generateNewsContent(promptStr)
-            
-            
-            const keywords = newsContent?.keywords;
+            if(!newsContent){
+                console.error("Skipping media item because AI content generation returned null", {
+                    headline: mediaObj.headline,
+                    genre: mediaObj.genre,
+                });
+                return;
+            }
+
+            const keywords = newsContent.keywords;
             if(!keywords){
-                throw new Error("Error in pipelineRunner: AI Agent did not generate any keywords")
+                console.error("Skipping media item because AI Agent did not generate keywords", {
+                    headline: mediaObj.headline,
+                    genre: mediaObj.genre,
+                });
+                return;
             }
 
             const imageSourceStrategies: {
@@ -177,7 +187,12 @@ curl -X POST http://localhost:8000/render \
          
          this.notifySubscribers(post)
         } catch (error) {
-            throw new Error("Error in pipelineRunner perMediaPipeline(): " + error)
+            console.error("Error in pipelineRunner perMediaPipeline(). Skipping media item.", {
+                headline: mediaObj.headline,
+                genre: mediaObj.genre,
+                error,
+            });
+            return;
         }
 
 
