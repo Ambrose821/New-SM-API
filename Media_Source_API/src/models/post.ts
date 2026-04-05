@@ -74,4 +74,4 @@ postSchema.pre('validate', function(next) {
     next()
 })
 
-export default model<Post>('postSchema',postSchema)
+export default model<Post>('Post',postSchema)

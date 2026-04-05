@@ -24,5 +24,5 @@ const pipelineSchema = new Schema<Pipeline>({
         }
         
 })
-export default model<Pipeline>('pipelineSchema',pipelineSchema)
+export default model<Pipeline>('Pipeline',pipelineSchema)
 

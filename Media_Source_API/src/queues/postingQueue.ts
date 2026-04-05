@@ -3,7 +3,8 @@ import IORedis from 'ioredis';
 import Post from '../models/post';
 import SocialAccount from '../models/socialAccount';
 import { post_to_instagram } from '../services/Socials/meta/metaPosting';
-
+import { createJob, updateJob } from '../models/mappers/postJobMapper';
+import { PostJob } from './types';
 interface PostingJobData {
     postId: string,
     socialAccountId: string
@@ -15,10 +16,13 @@ const postingQueue = new Queue<PostingJobData>('posting', {
    connection
 });
 
+
+// TODO Make platform agnostic.
 const postWorker = new Worker<PostingJobData>('posting', async job => {
     console.log(`Processing job ${job.id} with data:`, job.data);
 
     const { postId, socialAccountId } = job.data;
+    
     const post = await Post.findById(postId);
     if (!post) {
         throw new Error(`Post ${postId} not found`);
@@ -49,9 +53,35 @@ const postWorker = new Worker<PostingJobData>('posting', async job => {
     return result;
 },{connection});
 
+postWorker.on('completed',async (job) =>{
+    const status = await job.getState()
+    await updateJob(job.id!,status)
+    
+})
+
+postWorker.on('failed',async (job,err) =>{
+    const status = await job!.getState()
+    await updateJob(job!.id!,status,err.message)
+    await job!.remove()
+})
+
 
 export const postProducer = async (jobData: PostingJobData) =>{
-    return postingQueue.add('social_media_post',jobData)
+    const job = await postingQueue.add('social_media_post',jobData,{
+        removeOnComplete:true,
+        removeOnFail:false,
+
+    })
+    const jobId = job.id!
+    const socialAccountId = jobData.socialAccountId
+    const postId = jobData.postId
+
+    await createJob({
+        jobId,
+        socialAccountId,
+        postId
+    } as PostJob)
+
 }
 
 

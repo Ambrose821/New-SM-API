@@ -80,6 +80,7 @@ export interface RenderResponse{
 }
 
 export interface SocialAccount{
+    _id:String|null|undefined,
     platform: Platform,
     handle: String,
     instagramId: String|null,

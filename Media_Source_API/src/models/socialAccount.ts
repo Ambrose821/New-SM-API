@@ -18,4 +18,4 @@ const socialAccountSchema = new Schema<SocialAccount>({
         required:false
     }
 })
-export default model<SocialAccount>('socialAccountScheme',socialAccountSchema)
+export default model<SocialAccount>('SocialAccount',socialAccountSchema)
