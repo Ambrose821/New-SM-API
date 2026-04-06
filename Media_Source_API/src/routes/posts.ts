@@ -1,8 +1,7 @@
 import express from 'express';
 const router = express.Router();
-import mongoose from 'mongoose';
-import Post from '../models/post';
-import SocialAccount from '../models/socialAccount';
+import { getPosts, getPostsForPublishing, isValidPostId } from '../models/mappers/postMapper';
+import { getSocialAccountById, isValidSocialAccountId } from '../models/mappers/socialAccountMapper';
 import { postProducer } from '../queues/postingQueue';
 
 // TODO Genres should be dynamic based on DB entries
@@ -32,20 +31,14 @@ router.get('/', async (req,res)=>{
         }else{
             sortBy[sort[0]] = 'desc'; // Default to descending
         }
-        const filter = {
-            genre: { $in: genre },
-            mediaType: { $in: mediaType },
-            $or :[
-                {headline : { $regex: search, $options: 'i' }},
-                {description : { $regex: search, $options: 'i' }}
-            ]
-        }
-        const posts = await Post.find(filter)
-            .sort(sortBy)
-            .skip(page * limit)
-            .limit(limit).select('-__v').lean();
-
-       const numberOfPosts = await Post.countDocuments(filter)
+        const { posts, numberOfPosts } = await getPosts({
+            page,
+            limit,
+            search,
+            sortBy,
+            genre,
+            mediaType,
+        })
 
        const responseData =  {
             posts: posts,
@@ -76,19 +69,19 @@ router.post('/publish', async (req, res) => {
             return res.status(400).json({ message: 'postIds must be a non-empty array' });
         }
 
-        if (postIds.some((postId) => !mongoose.Types.ObjectId.isValid(postId))) {
+        if (postIds.some((postId) => !isValidPostId(postId))) {
             return res.status(400).json({ message: 'All postIds must be valid ids' });
         }
 
-        if (!socialAccountId || !mongoose.Types.ObjectId.isValid(socialAccountId)) {
+        if (!socialAccountId || !isValidSocialAccountId(socialAccountId)) {
             return res.status(400).json({ message: 'Valid socialAccountId is required' });
         }
 
         const uniquePostIds = [...new Set(postIds)];
 
         const [posts, socialAccount] = await Promise.all([
-            Post.find({ _id: { $in: uniquePostIds } }).select('_id posted'),
-            SocialAccount.findById(socialAccountId).select('_id platform instagramId handle')
+            getPostsForPublishing(uniquePostIds),
+            getSocialAccountById(socialAccountId)
         ]);
 
         if (posts.length !== uniquePostIds.length) {

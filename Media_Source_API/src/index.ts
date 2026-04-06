@@ -61,11 +61,13 @@ app.use(express.static(path.join(__dirname,'../public')));
 // Router imports
 import postRoutes from './routes/posts'
 import socialAccountsRouter from './routes/socialAccounts'
+import pipelineRoutes from './routes/pipelines'
 
 
 //Use Routes
 app.use('/posts',postRoutes)
 app.use('/socials',socialAccountsRouter)
+app.use('/pipelines',pipelineRoutes)
 
 app.use(session({
     secret: 'keyboard cat',
@@ -100,8 +102,8 @@ app.listen(PORT, () =>{
 
 //Play area
 
-import { LLMAgent,GeminiLLMAgent } from './services/AIServices/LLMAgent'
-import { LLMClient } from './services/AIServices/LLMClient'
+import { LLMAgent,GeminiLLMAgent } from './services/LlmServices/LLMAgent'
+import { LLMClient } from './services/LlmServices/LLMClient'
 import { MediaEditingClient } from './services/MediaEditing/MediaEditingClient'
 import { simpleMediaEditingAgent } from './services/MediaEditing/MediaEditingAgent'
 import { mongoSubscriber } from './pipeline/pipelineSubscribers/mongoSubscriber'

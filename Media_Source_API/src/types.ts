@@ -1,5 +1,21 @@
 export type Genre = 'news' | 'politics' | 'sports' | 'memes' | 'humour' | 'finance' | 'crypto' | 'viral' | 'tech'
 export type Platform = 'twitter' | 'facebook' | 'instagram' | 'tiktok' | 'linkedin'
+export type SourceType = 'rssApp' | 'newsIO' | '9gag'
+export type ImageSourceType = 'openverse' | 'pixabay' | 'falAI'
+export type LLMAgentType = 'gemini'
+export type PipelineFrequency = 'daily' | 'weekly' | 'monthly'
+
+export interface ImageSourceConfig{
+    strategy: ImageSourceType,
+    model: String | null,
+    systemPrompts: String[] | undefined,
+    promptInfo: String[] | undefined,
+}
+
+export interface LLMConfig{
+    agent: LLMAgentType,
+    model: String,
+}
 
 export interface Media{
     headline: String,
@@ -25,6 +41,7 @@ export interface Post{
     videoAttributions: String[]|null,
     audioAttributions: String [] | null,
     posted: Boolean|null
+    pipelineId: String | null
 
 }
 export interface NewsContent{
@@ -42,10 +59,17 @@ export interface ImageData{
 }
 
 export interface Pipeline{
-    source: 'rssApp' | 'newsIO' | '9gag'
+    name: String,
+    description: String | null,
+    source: SourceType
     source_url: String,
     genre: Genre[],
-    frequency: 'daily'|'weekly'|'monthly'
+    frequency: PipelineFrequency
+    backgroundImageSource: ImageSourceConfig,
+    foregroundImageSource: ImageSourceConfig | null,
+    llm: LLMConfig,
+    socialAccountId: String | null | undefined,
+    isActive: Boolean,
 }
 
 

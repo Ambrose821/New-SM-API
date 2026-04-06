@@ -2,8 +2,8 @@ import {Media,Genre, RenderRequest, RenderResponse, Post} from "../types";
 
 import Sourcer from "../services/Sourcing/Sourcer";
 
-import { LLMAgent,GeminiLLMAgent } from '../services/AIServices/LLMAgent'
-import { LLMClient } from '../services/AIServices/LLMClient'
+import { LLMAgent,GeminiLLMAgent } from '../services/LlmServices/LLMAgent'
+import { LLMClient } from '../services/LlmServices/LLMClient'
 import { OpenverseClient } from "../services/ImageAndVideoSource/openVerseClient";
 import PixabayClient from "../services/ImageAndVideoSource/pixaBayClient";
 import { ImageSourceRequest, ImageSourceStrategy } from "../services/ImageAndVideoSource/imageSourceStrategy";
@@ -23,15 +23,17 @@ export default class PipelineRunner{
     private genres :Genre[];
     private mediaEditingClient: MediaEditingClient;
     private llmCli: LLMClient;
+    private pipelineId: String | null;
 
     private subscribers: pipeLineSubscriber[] =[];
 
-    constructor(sourcer: Sourcer,llmCli:LLMClient,mediaEditingClient: MediaEditingClient, sourceURL: string,genres: Genre[]){
+    constructor(sourcer: Sourcer,llmCli:LLMClient,mediaEditingClient: MediaEditingClient, sourceURL: string,genres: Genre[], pipelineId: String | null = null){
         this.sourceURL = sourceURL;
         this.sourcer = sourcer;
         this.llmCli = llmCli;
         this.mediaEditingClient =mediaEditingClient
         this.genres = genres;
+        this.pipelineId = pipelineId;
         
 
     }
@@ -173,14 +175,15 @@ curl -X POST http://localhost:8000/render \
         const imageAttributions = imageDataArr.map((element)=>{
             return element?.attribution
         })
-        const post:Post = {
+         const post:Post = {
             headline: newsContent.headline,
             description: newsContent.summary,
             thumbnailUrl: renderResponse.thumbnail ,
             videoUrl: renderResponse.video,
             mediaType: renderResponse.video ? 'Video' : 'Image',
             genre: mediaObj.genre,
-            imageAttributions:imageAttributions? imageAttributions :null
+            imageAttributions:imageAttributions? imageAttributions :null,
+            pipelineId: this.pipelineId
             
          }as Post
          console.log(post)

@@ -62,6 +62,12 @@ const postSchema = new Schema<Post>({
         default:false
 
     },
+    pipelineId:{
+        type: Schema.Types.ObjectId,
+        ref:'Pipeline',
+        required:false,
+        default:null
+    }
 
 })
 

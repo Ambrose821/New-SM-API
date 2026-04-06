@@ -1,6 +1,10 @@
 import express from 'express'
 const router = express.Router();
-import SocialAccount from '../models/socialAccount';
+import {
+    createInstagramSocialAccount,
+    getSocialAccountByInstagramId,
+    getSocialAccounts
+} from '../models/mappers/socialAccountMapper';
 import {get_instagram_id} from '../services/Socials/meta/metaAuth';
 
 
@@ -13,12 +17,7 @@ router.get('/', async (req,res) =>{
         let platformFilter : string[];
         platformQuery === 'all' ? platformFilter = PLATFORM_OPTIONS : platformFilter = platformQuery.split(',') as string[];
 
-        const filter = {
-            platform : {$in: platformFilter},
-            handle : {$regex: searchedHandle, $options: 'i'}
-        }
-
-        const socialAccounts = await SocialAccount.find(filter).select('-__v').lean();
+        const socialAccounts = await getSocialAccounts(searchedHandle, platformFilter);
         res.status(200).json({socialAccounts: socialAccounts})
     }
     catch(error){
@@ -46,16 +45,11 @@ router.post('/instagram', async (req, res) =>{
         }
 
         // Check if the account already exists
-        const existingAccount = await SocialAccount.findOne({instagramId: instagramId}).lean();
+        const existingAccount = await getSocialAccountByInstagramId(instagramId);
         if(existingAccount){
             return res.status(400).json({message: `Instagram account ${handle} already exists`});
         }
-        const newAccount = new SocialAccount({
-            platform: 'instagram',
-            handle: handle,
-            instagramId: instagramId
-        })
-        await newAccount.save();
+        const newAccount = await createInstagramSocialAccount(handle, instagramId);
         res.status(201).json(newAccount);
     }catch(error){
         res.status(500).json({message: 'Error creating social account', error});

@@ -1,4 +1,4 @@
-import { Queue, Worker } from 'bullmq';
+import { Job, Queue, Worker } from 'bullmq';
 import IORedis from 'ioredis';
 import Post from '../models/post';
 import SocialAccount from '../models/socialAccount';
@@ -67,7 +67,7 @@ postWorker.on('failed',async (job,err) =>{
 })
 
 
-export const postProducer = async (jobData: PostingJobData) =>{
+export const postProducer = async (jobData: PostingJobData): Promise<Job<PostingJobData>> =>{
     const job = await postingQueue.add('social_media_post',jobData,{
         removeOnComplete:true,
         removeOnFail:false,
@@ -84,5 +84,4 @@ export const postProducer = async (jobData: PostingJobData) =>{
     } as PostJob)
     return job
 }
-
 
