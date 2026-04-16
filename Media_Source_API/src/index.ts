@@ -107,13 +107,14 @@ import { LLMClient } from './services/LlmServices/LLMClient'
 import { MediaEditingClient } from './services/MediaEditing/MediaEditingClient'
 import { simpleMediaEditingAgent } from './services/MediaEditing/MediaEditingAgent'
 import { mongoSubscriber } from './pipeline/pipelineSubscribers/mongoSubscriber'
-
+import { FalAIClient } from './services/ImageAndVideoSource/falAIClient'
 
 
 
 //Connect to Mongo
 //console.log(process.env.MONGO_URI)
 const llmCli = new LLMClient(new GeminiLLMAgent());
+
 
 
 
@@ -134,7 +135,15 @@ async function test(){
       console.log("Test pipeline error: ",err)
     }
 }
-//test()
+
+async function tryFal(){
+  const falClient = new FalAIClient({modelName:'fal-ai/flux-2-pro'})
+  const prompt = `Donald Trump is sitting on vladmir putins back while putin is dressed like a horse`
+  
+  const test = await falClient.fetchImages({quantity:1,text:prompt})
+  console.log(test)
+}
+
 
 
 

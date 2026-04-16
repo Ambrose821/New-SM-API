@@ -32,7 +32,7 @@ const getGenres = async () =>{
 
 const publishPosts = async (postIds: string[], socialAccountId:string) =>{
     try{
-        const response = await api.post('/posts/publish',{postIds:postIds,socialAccountId:socialAccountId})
+        await api.post('/posts/publish',{postIds:postIds,socialAccountId:socialAccountId}) 
         // TODO, Do something with this data?
         return true
 

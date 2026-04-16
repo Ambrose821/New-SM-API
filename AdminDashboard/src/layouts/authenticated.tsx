@@ -1,6 +1,6 @@
 import { Outlet, useNavigate } from "react-router-dom";
 import { useEffect } from 'react';
-import { useAuth,UserButton,SignOutButton } from "@clerk/clerk-react";
+import { useAuth } from "@clerk/clerk-react";
 
 import { SidebarProvider,SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";

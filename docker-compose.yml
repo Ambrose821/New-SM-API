@@ -3,14 +3,21 @@ services:
     #Where dat docker file
     build: ./Media_Source_API
     container_name: media_source_api
-
     env_file:
       - path: ./Media_Source_API/.env
     ports:
       - "3000:3000"
     depends_on:
       - cache
-
+  
+  admin_dashboard:
+    build: ./AdminDashboard
+    container_name: admin_dashboard
+    env_file:
+      - path: ./AdminDashboard/.env
+    ports:
+      - "5173:5173"
+  
   cache:
     image: redis:7.4-alpine
     restart: always
