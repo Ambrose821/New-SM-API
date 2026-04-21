@@ -2,7 +2,7 @@ export type Genre = 'news' | 'politics' | 'sports' | 'memes' | 'humour' | 'finan
 export type Platform = 'twitter' | 'facebook' | 'instagram' | 'tiktok' | 'linkedin'
 export type SourceType = 'rssApp' | 'newsIO' | '9gag'
 export type ImageSourceType = 'openverse' | 'pixabay' | 'falAI'
-export type LLMAgentType = 'gemini'
+export type LLMAgentType = 'gemini-2.5-flash'
 export type PipelineFrequency = 'daily' | 'weekly' | 'monthly'
 
 export interface ImageSourceConfig{

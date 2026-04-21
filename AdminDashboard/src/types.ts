@@ -32,3 +32,17 @@ export type TargetSocialContextType ={
     socalAccount: SocialAccount | null;
     setSocialAccount: (account: SocialAccount | null) => void;
 }
+
+export type PipelineOptions = {
+
+    sources: string[],
+    imageSources: string[],
+    llmAgents: string[],
+    frequencies: string[],
+}
+
+export type MediaApiState = {
+    genres : string [];
+    socialPlatforms : "instagram" | "twitter" | "facebook" | "tiktok" | "linkedin" | "youtube";
+    pipelineOptions: PipelineOptions
+}

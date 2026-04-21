@@ -9,8 +9,6 @@ import {createContext,useState } from "react";
 
 import type { SocialAccount, TargetSocialContextType } from "@/types";
 
-
-
 export const TargetSocialContext = createContext<TargetSocialContextType|undefined>(undefined)
 
 export const TargetSocialProvider = ({children}: {children: React.ReactNode }) =>{

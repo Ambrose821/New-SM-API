@@ -15,7 +15,7 @@ const router = express.Router()
 
 const SOURCE_OPTIONS: SourceType[] = ['rssApp', 'newsIO', '9gag']
 const IMAGE_SOURCE_OPTIONS: ImageSourceType[] = ['openverse', 'pixabay', 'falAI']
-const LLM_AGENT_OPTIONS: LLMAgentType[] = ['gemini']
+const LLM_AGENT_OPTIONS: LLMAgentType[] = ['gemini-2.5-flash']
 const FREQUENCY_OPTIONS: PipelineFrequency[] = ['daily', 'weekly', 'monthly']
 
 router.get('/', async (req, res) => {

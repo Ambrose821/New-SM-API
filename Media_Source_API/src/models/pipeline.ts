@@ -19,11 +19,6 @@ const imageSourceConfigSchema = new Schema(
             required: false,
             default: undefined,
         },
-        promptInfo: {
-            type: [String],
-            required: false,
-            default: undefined,
-        },
     },
     { _id: false }
 )
@@ -32,7 +27,7 @@ const llmConfigSchema = new Schema(
     {
         agent: {
             type: String,
-            enum: ['gemini'],
+            enum: ['gemini-2.5-flash'],
             required: true,
         },
         model: {

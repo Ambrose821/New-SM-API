@@ -20,7 +20,7 @@ import {
   SelectGroup,
   SelectItem,
 } from "@/components/ui/select"
-import { InstagramForm, type InstagramFormValues } from "./AddForms/InstagramForm"
+import { InstagramForm, type InstagramFormValues } from "./Forms/InstagramForm"
 import { createInstagramAccount } from "@/util/api/socials"
 import { toast } from "sonner"
 
@@ -77,7 +77,7 @@ export function AddSocialDialog({ platforms }: AddSocialDialogProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline">Add Socials</Button>
+        <Button>Add Socials</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-sm">
         <form onSubmit={handleSubmit}>

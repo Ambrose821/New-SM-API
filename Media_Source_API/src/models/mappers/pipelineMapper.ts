@@ -44,8 +44,6 @@ export async function updatePipeline(pipelineId: string, pipeline: Partial<Pipel
     {
       $set: {
         ...pipeline,
-        foregroundImageSource: pipeline.foregroundImageSource ?? null,
-        description: pipeline.description ?? null,
       },
     },
     { new: true, runValidators: true }

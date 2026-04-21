@@ -11,6 +11,7 @@ import DashboardHome from './components/dashboard-home.tsx'
 import Posts from './pages/posts.tsx'
 import Socials from './pages/socials.tsx'
 import { Toaster } from '@/components/ui/sonner'
+import Pipelines from './pages/pipelines.tsx'
 // Import your Publishable Key
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
 
@@ -31,6 +32,7 @@ createRoot(document.getElementById('root')!).render(
               <Route index element={<DashboardHome />} />
               <Route path="posts" element={<Posts/>} />
               <Route path ="socials" element={<Socials/>}/>
+              <Route path="pipeline" element={<Pipelines/>}/>
             </Route>
           </Route>
         </Routes>

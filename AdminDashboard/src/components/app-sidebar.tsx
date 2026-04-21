@@ -18,7 +18,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
-import { ChevronsUpDown, GalleryVerticalEnd, LogOut, User,ImageUp, MessageCircleCode  } from "lucide-react";
+import { ChevronsUpDown, GalleryVerticalEnd, LogOut, User,ImageUp, MessageCircleCode, FlaskConical  } from "lucide-react";
 import {useAuth,useUser,useClerk} from "@clerk/clerk-react"
 
 export function AppSidebar() {
@@ -33,6 +33,11 @@ export function AppSidebar() {
           title: "Socials",
           path:"/dashboard/socials",
           icon:MessageCircleCode
+        },
+        {
+          title: "Pipelines",
+          path:"/dashboard/pipeline",
+          icon: FlaskConical
         }
     ]
 
