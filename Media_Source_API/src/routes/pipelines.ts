@@ -9,11 +9,11 @@ import {
     updatePipeline
 } from '../models/mappers/pipelineMapper'
 import { isValidSocialAccountId, socialAccountExists } from '../models/mappers/socialAccountMapper'
-import { ImageSourceType, LLMAgentType, Pipeline as PipelineType, PipelineFrequency, SourceType } from '../types'
+import { ImageSourceType, LLMAgentType, Pipeline as PipelineType, PipelineFrequency, SourceType, PipelineRequestData } from '../types'
 
 const router = express.Router()
 
-const SOURCE_OPTIONS: SourceType[] = ['rssApp', 'newsIO', '9gag']
+const SOURCE_OPTIONS: SourceType[] = ['rssApp']
 const IMAGE_SOURCE_OPTIONS: ImageSourceType[] = ['openverse', 'pixabay', 'falAI']
 const LLM_AGENT_OPTIONS: LLMAgentType[] = ['gemini-2.5-flash']
 const FREQUENCY_OPTIONS: PipelineFrequency[] = ['daily', 'weekly', 'monthly']
@@ -60,23 +60,44 @@ router.get('/:id', async (req, res) => {
 
 router.post('/', async (req, res) => {
     try{
-        const pipeline = req.body as PipelineType
+        const pipelineData = req.body as PipelineRequestData
 
-        if (pipeline.socialAccountId && !isValidSocialAccountId(String(pipeline.socialAccountId))) {
+        if (pipelineData.socialAccountId && !isValidSocialAccountId(pipelineData.socialAccountId)) {
             return res.status(400).json({ message: 'Invalid socialAccountId' })
         }
 
-        if (pipeline.socialAccountId) {
-            const exists = await socialAccountExists(String(pipeline.socialAccountId))
+        if (pipelineData.socialAccountId) {
+            const exists = await socialAccountExists(pipelineData.socialAccountId)
             if (!exists) {
                 return res.status(404).json({ message: 'Social account not found' })
             }
         }
 
+        const pipeline = {
+            ...pipelineData,
+            backgroundImageSource: {
+                strategy: pipelineData.backgroundImageSource as ImageSourceType,
+                model: undefined,
+                systemPrompts: undefined,
+                promptInfo: undefined
+            },
+            foregroundImageSource: pipelineData.foregroundImageSource ? {
+                strategy: pipelineData.foregroundImageSource as ImageSourceType,
+                model: undefined,
+                systemPrompts: undefined,
+                promptInfo: undefined
+            } : undefined,
+            llm: {
+                agent: pipelineData.llm as LLMAgentType
+            },
+            isActive: true
+        } as PipelineType
+
         const createdPipeline = await createPipeline(pipeline)
         res.status(201).json({ pipeline: toPipeline(createdPipeline) })
     }catch(error){
-        res.status(500).json({ message: 'Error creating pipeline', error })
+        res.status(500).json({ message: 'Error creating pipeline: ', error })
+        console.log(error)
     }
 })
 

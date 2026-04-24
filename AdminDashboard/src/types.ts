@@ -41,6 +41,20 @@ export type PipelineOptions = {
     frequencies: string[],
 }
 
+export interface Pipeline{
+    name: string,
+    description: string | null,
+    source: string
+    source_url: string,
+    genre: string[],
+    frequency: string
+    backgroundImageSource: string,
+    foregroundImageSource: string | null,
+    llm: string,
+    socialAccountId: string | null | undefined,
+    isActive: Boolean | null,
+}
+
 export type MediaApiState = {
     genres : string [];
     socialPlatforms : "instagram" | "twitter" | "facebook" | "tiktok" | "linkedin" | "youtube";

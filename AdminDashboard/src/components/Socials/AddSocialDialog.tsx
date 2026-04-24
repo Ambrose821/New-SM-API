@@ -67,7 +67,6 @@ export function AddSocialDialog({ platforms }: AddSocialDialogProps) {
           await createInstagramAccount(instagramForm.username,instagramForm.facebookId)
           toast.success("Social Added")
         }catch(error){
-          console.log("Problemo")
           toast.error("Something went wrong adding the account")
         }
       break;

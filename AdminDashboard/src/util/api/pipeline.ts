@@ -1,5 +1,5 @@
 import api from "./api";
-import type { PipelineOptions } from "@/types";
+import type { Pipeline, PipelineOptions } from "@/types";
 
 
 export const getPipelineOptions = async (): Promise<PipelineOptions> =>{
@@ -8,3 +8,14 @@ export const getPipelineOptions = async (): Promise<PipelineOptions> =>{
     return options
 }
 
+export const createPipeline = async (pipelineData:Pipeline) => {
+    try{
+        const response = await api.post('/pipelines',pipelineData)
+        const pipeline = response.data.pipeline
+        return pipeline
+    }catch (error){
+        //TODO Error handleing
+        console.log((error as any).response ?? '')
+        throw error
+    }
+}

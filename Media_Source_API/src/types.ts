@@ -3,18 +3,19 @@ export type Platform = 'twitter' | 'facebook' | 'instagram' | 'tiktok' | 'linked
 export type SourceType = 'rssApp' | 'newsIO' | '9gag'
 export type ImageSourceType = 'openverse' | 'pixabay' | 'falAI'
 export type LLMAgentType = 'gemini-2.5-flash'
-export type PipelineFrequency = 'daily' | 'weekly' | 'monthly'
+export type PipelineFrequency = 'daily' | 'weekly' | 'monthly' | ""
 
 export interface ImageSourceConfig{
     strategy: ImageSourceType,
-    model: String | null,
-    systemPrompts: String[] | undefined,
+    //below fields exist because eventually i will allow more customization of pipelines
+    model: String | null | undefined,
+    systemPrompts: String[] | undefined | undefined,
     promptInfo: String[] | undefined,
 }
 
 export interface LLMConfig{
     agent: LLMAgentType,
-    model: String,
+    // model: String,
 }
 
 export interface Media{
@@ -59,10 +60,10 @@ export interface ImageData{
 }
 
 export interface Pipeline{
-    name: String,
-    description: String | null,
+    name: string,
+    description: string | null,
     source: SourceType
-    source_url: String,
+    source_url: string,
     genre: Genre[],
     frequency: PipelineFrequency
     backgroundImageSource: ImageSourceConfig,
@@ -95,6 +96,20 @@ export interface RenderRequest{
     encoder: String, // Should be "libx264"
     preset:String, //Normally "medium",
 
+}
+
+export interface PipelineRequestData {
+    name: string,
+    description: string | null,
+    source: string
+    source_url: string,
+    genre: string[],
+    frequency: string
+    backgroundImageSource: string,
+    foregroundImageSource: string | null | undefined,
+    llm: string,
+    socialAccountId: string | null | undefined,
+    isActive: Boolean | null,
 }
 
 export interface RenderResponse{

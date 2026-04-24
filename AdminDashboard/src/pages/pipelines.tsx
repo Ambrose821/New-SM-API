@@ -37,7 +37,9 @@ export default function Pipelines(){
               />
             </div>
             <div className="flex flex-n sm:ml-auto gap-4">
+              
               <CreatePipelineDialog/>
+
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" className="inline-flex items-center gap-2 border border-gray-">

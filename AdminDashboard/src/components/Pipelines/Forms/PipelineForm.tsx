@@ -17,8 +17,11 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 
 import useMediaApiState from "@/hooks/use-media-api-state"
+import type { Pipeline } from "@/types"
+
 
 type PostTemplateOption = {
   value: string
@@ -118,7 +121,7 @@ function PostTypeSelector({ value, onChange }: PostTypeSelectorProps) {
   return (
     <RadioGroup
       value={value}
-      onValueChange={onChange}
+      onValueChange={(value) => onChange(value)}
       className="grid grid-cols-1 gap-3 sm:grid-cols-2 py-5"
     >
       {POST_TEMPLATE_OPTIONS.map((option) => (
@@ -149,44 +152,39 @@ function PostTypeSelector({ value, onChange }: PostTypeSelectorProps) {
   )
 }
 
-export default function PipelineForm() {
+
+interface pipelineFormProps {
+  pipelineData: Pipeline
+  onChange: (data: Pipeline) => void
+}
+
+export default function PipelineForm({pipelineData, onChange}:pipelineFormProps) {
   const [postType, selectPostType] = useState(POST_TEMPLATE_OPTIONS[0].value)
-  const [sourceType, setSourceType] = useState<string>('')
-  const [sourceUrl, setSourceURL] = useState<string>('')
-  const [bgImageSource, setBgImageSource] = useState<string>('')
-  const [fgImageSource, setFgImageSource] = useState<string>('')
-  const [languageModel, setLanguageModel] = useState<string>('')
-  const [name, setName] = useState<string>('')
-  const [genre, setGenre] = useState('')
   const [requiresUrl, setRequiresUrl] = useState<boolean>(false)
 
   const mediaState = useMediaApiState()  
 
-
-
   const handleSourceTypeChange = (value: string) => {
-
-
-    const nextSourceType = mediaState?.pipelineOptions.sources.find(
-      (option) => option === value
-    )
-    if(nextSourceType){
-      setSourceType(nextSourceType)
-      setRequiresUrl(nextSourceType === 'rssApp')
-
-      if (nextSourceType !== 'rssApp') {
-        setSourceURL('')
-      }
+    onChange({...pipelineData, source : value})
+    setRequiresUrl(value === 'rssApp')
+    if (value !== 'rssApp') {
+        onChange({...pipelineData, source_url : ''})
     }
+
+  }
+
+  const handlePostTypeChange = (value:string) => {
+    console.log(value)
+     if(value === 'no-foreground'){
+        onChange({...pipelineData, foregroundImageSource:""})
+     }  
+     selectPostType(value)
+
   }
   
   const requiresFgSource = (): boolean => {
     return postType != "no-foreground"
   }
-
- 
-
-
 
   return (
     <FieldGroup>
@@ -195,25 +193,35 @@ export default function PipelineForm() {
         <FieldDescription>
           Choose the visual layout that will be used when generated posts are created.
         </FieldDescription>
-        <PostTypeSelector value={postType} onChange={selectPostType} />
+        <PostTypeSelector value={postType} onChange={handlePostTypeChange} />
       </Field>
 
       <Field>
         <FieldLabel>Name</FieldLabel>
         <Input
-          value = {name}
+          value = {pipelineData.name}
           placeholder="Pipeline Name"
-          onChange={(e) => {setName(e.target.value)}}
+          onChange={(e) => onChange({...pipelineData, name: e.target.value})}
           required
         />
       </Field>
 
+      <Field>
+        <FieldLabel>
+          Description
+        </FieldLabel>
+        <Textarea 
+          placeholder="Describe this pipeline's behaviour"
+          className="resize-none"
+          onChange={(e) => onChange({...pipelineData, description: e.target.value})}
+          />
+      </Field>
 
       <Field>
         <FieldLabel htmlFor="genre">
           Genre
         </FieldLabel>
-        <Select value={genre} onValueChange={setGenre}>
+        <Select value={pipelineData.genre[0]} onValueChange={(value) =>onChange({...pipelineData, genre: [value]}) } required>
           <SelectTrigger id="genre" className="w-full">
             <SelectValue placeholder="Genre" />
           </SelectTrigger>
@@ -238,7 +246,7 @@ export default function PipelineForm() {
         <FieldLabel htmlFor="background-image-source">
           Background image source
         </FieldLabel>
-        <Select value={bgImageSource} onValueChange={setBgImageSource}>
+        <Select value={pipelineData.backgroundImageSource} onValueChange={(value) =>onChange({...pipelineData, backgroundImageSource: value}) } required>
           <SelectTrigger id="background-image-source" className="w-full">
             <SelectValue placeholder="Background image source" />
           </SelectTrigger>
@@ -262,7 +270,7 @@ export default function PipelineForm() {
           <FieldLabel htmlFor="foreground-image-source">
             Foreground image source
           </FieldLabel>
-          <Select value={fgImageSource} onValueChange={setFgImageSource}>
+          <Select value={pipelineData.foregroundImageSource ?? ''} onValueChange={(value) =>onChange({...pipelineData, foregroundImageSource: value}) } required>
             <SelectTrigger id="foreground-image-source" className="w-full">
               <SelectValue placeholder="Foreground image source" />
             </SelectTrigger>
@@ -284,7 +292,7 @@ export default function PipelineForm() {
 
       <Field>
         <FieldLabel htmlFor="source-type">Source type</FieldLabel>
-        <Select value={sourceType} onValueChange={handleSourceTypeChange}>
+        <Select value={pipelineData.source} onValueChange={handleSourceTypeChange} required>
           <SelectTrigger id="source-type" className="w-full">
             <SelectValue placeholder="Source type" />
           </SelectTrigger>
@@ -309,8 +317,8 @@ export default function PipelineForm() {
           <Input
             id="sourceUrl"
             placeholder="Source URL (eg RSS Feed)"
-            value={sourceUrl}
-            onChange={(e) => setSourceURL(e.target.value)}
+            value={pipelineData.source_url}
+            onChange={(e) => onChange({...pipelineData, source_url: e.target.value})}
             required
           />
           <FieldDescription>
@@ -321,13 +329,18 @@ export default function PipelineForm() {
 
       <Field>
         <FieldLabel htmlFor="language-model">Language model</FieldLabel>
-        <Select value={languageModel} onValueChange={setLanguageModel} required>
+        <Select value={pipelineData.llm} onValueChange={(value) => onChange({...pipelineData, llm: value})} required>
           <SelectTrigger id="language-model" className="w-full">
             <SelectValue placeholder="Language model" />
           </SelectTrigger>
           <SelectContent position="item-aligned">
             <SelectGroup>
-              <SelectItem value="geminie-2.5-flash">Gemini 2.5</SelectItem>
+              {
+                mediaState?.pipelineOptions.llmAgents.map((agent) =>(
+                  <SelectItem value={agent}>{agent}</SelectItem>
+                )
+                )
+              }
             </SelectGroup>
           </SelectContent>
         </Select>

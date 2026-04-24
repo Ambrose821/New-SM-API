@@ -32,7 +32,8 @@ const llmConfigSchema = new Schema(
         },
         model: {
             type: String,
-            required: true,
+            required: false,
+            default: null
         },
     },
     { _id: false }
@@ -57,7 +58,8 @@ const pipelineSchema = new Schema<Pipeline>({
         },
         source_url:{
             type: String,
-            required:true
+            required:false,
+            default: null
         },
         genre:{
            type:[String],
@@ -66,8 +68,8 @@ const pipelineSchema = new Schema<Pipeline>({
         },
         frequency:{
             type: String,
-            enum:['daily','weekly','monthly'],
-            default:'daily'
+            required: false,
+            enum:['daily','weekly','monthly',""],
         },
         backgroundImageSource:{
             type:imageSourceConfigSchema,
@@ -80,7 +82,7 @@ const pipelineSchema = new Schema<Pipeline>({
         },
         llm:{
             type:llmConfigSchema,
-            required:true
+            required:false
         },
         socialAccountId:{
             type: mongoose.Schema.Types.ObjectId,
