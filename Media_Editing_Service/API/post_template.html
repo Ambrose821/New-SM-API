@@ -58,7 +58,10 @@
   <div class="bg"></div>
   <div class="pill">{{ category }}</div>
   <div class="brand">{{ brand }}</div>
-  <div class="avatar"></div>
+
+  {% if fg_rul %} 
+    <div class="avatar"></div>
+  {% endif %}
   <div class="gradient"></div>
   <div class="caption">
     {{ caption_html | safe }}

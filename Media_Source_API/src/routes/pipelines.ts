@@ -14,7 +14,7 @@ import { ImageSourceType, LLMAgentType, Pipeline as PipelineType, PipelineFreque
 const router = express.Router()
 
 const SOURCE_OPTIONS: SourceType[] = ['rssApp']
-const IMAGE_SOURCE_OPTIONS: ImageSourceType[] = ['openverse', 'pixabay', 'falAI']
+const IMAGE_SOURCE_OPTIONS: ImageSourceType[] = ['openverse', 'pixabay', 'falAI', 'wikicommons', 'runware']
 const LLM_AGENT_OPTIONS: LLMAgentType[] = ['gemini-2.5-flash']
 const FREQUENCY_OPTIONS: PipelineFrequency[] = ['daily', 'weekly', 'monthly']
 
@@ -75,6 +75,7 @@ router.post('/', async (req, res) => {
 
         const pipeline = {
             ...pipelineData,
+            id: undefined,
             backgroundImageSource: {
                 strategy: pipelineData.backgroundImageSource as ImageSourceType,
                 model: undefined,

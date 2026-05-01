@@ -9,12 +9,11 @@ import cors from 'cors'
 
 
 //My Stuff
-import { nineStrategy ,rssAppStrategy} from './services/Sourcing/SourcingStrategy'
 import connectDB from './config/db'
 import {connectAgenda} from './config/agenda-config'
 import PipelineRunner from './pipeline/pipelineRunner'
-import Sourcer from './services/Sourcing/Sourcer'
 import pLimit from 'p-limit'
+import type { Pipeline } from './types'
 
 //Openverse token Handling
 
@@ -102,24 +101,37 @@ app.listen(PORT, () =>{
 
 //Play area
 
-import { LLMAgent,GeminiLLMAgent } from './services/LlmServices/LLMAgent'
-import { LLMClient } from './services/LlmServices/LLMClient'
-import { MediaEditingClient } from './services/MediaEditing/MediaEditingClient'
-import { simpleMediaEditingAgent } from './services/MediaEditing/MediaEditingAgent'
 import { mongoSubscriber } from './pipeline/pipelineSubscribers/mongoSubscriber'
-import { FalAIClient } from './services/ImageAndVideoSource/falAIClient'
+import { FalAIImageStrategy } from './services/ImageAndVideoSource/falAIClient'
 
 
 
 //Connect to Mongo
 //console.log(process.env.MONGO_URI)
-const llmCli = new LLMClient(new GeminiLLMAgent());
-
-
-
-
 //Test pipeline 
-const runner = new PipelineRunner(new Sourcer(new rssAppStrategy()),new LLMClient(new GeminiLLMAgent()),new MediaEditingClient(new simpleMediaEditingAgent()),'https://rss.app/feeds/t59EE8n2jTuYP8IM.xml',['tech']);
+const testPipeline: Pipeline = {
+  id: null,
+  name: 'RSS App Tech Test Pipeline',
+  description: 'Test pipeline using rss.app tech feed',
+  source: 'rssApp',
+  source_url: 'https://rss.app/feeds/tt9zcrPi3NtixMvz.xml',
+  genre: ['politics'],
+  frequency: '',
+  backgroundImageSource: {
+    strategy: 'falAI',
+    model: null,
+    systemPrompts: undefined,
+    promptInfo: undefined,
+  },
+  foregroundImageSource: null,
+  llm: {
+    agent: 'gemini-2.5-flash',
+  },
+  socialAccountId: null,
+  isActive: true,
+};
+
+const runner = new PipelineRunner(testPipeline);
 
 
 
@@ -136,15 +148,12 @@ async function test(){
     }
 }
 
-async function tryFal(){
-  const falClient = new FalAIClient({modelName:'fal-ai/flux-2-pro'})
-  const prompt = `Donald Trump is sitting on vladmir putins back while putin is dressed like a horse`
-  
-  const test = await falClient.fetchImages({quantity:1,text:prompt})
-  console.log(test)
+
+try{
+test()
+}catch(error){
+  console.log(error)
 }
-
-
 
 
 

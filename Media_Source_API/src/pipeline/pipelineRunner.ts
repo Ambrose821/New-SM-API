@@ -1,14 +1,19 @@
 import {Media,Genre, RenderRequest, RenderResponse, Post} from "../types";
 
 import Sourcer from "../services/Sourcing/Sourcer";
+import type { Pipeline, SourcerRequest } from "../types";
 
 import { LLMAgent,GeminiLLMAgent } from '../services/LlmServices/LLMAgent'
 import { LLMClient } from '../services/LlmServices/LLMClient'
-import { OpenverseClient } from "../services/ImageAndVideoSource/openVerseClient";
 import PixabayClient from "../services/ImageAndVideoSource/pixaBayClient";
 import { ImageSourceRequest, ImageSourceStrategy } from "../services/ImageAndVideoSource/imageSourceStrategy";
 import { MediaEditingClient } from "../services/MediaEditing/MediaEditingClient";
 import { pipeLineSubscriber } from "./pipelineSubscribers/piplineSubscriber";
+import { createSourceStrategy } from "../factories/SourceStrategyFacrory";
+import { simpleMediaEditingAgent } from "../services/MediaEditing/MediaEditingAgent";
+import { createImageSourceStrategy } from "../factories/ImageSourceFactory";
+import { createLLMAgent } from "../factories/LlmAgentFactory";
+
 
 /*
     This class acts as the controller for all functionality of the media processing pipeline and will perform all pipeline actions per media source.
@@ -19,38 +24,45 @@ import { pipeLineSubscriber } from "./pipelineSubscribers/piplineSubscriber";
 export default class PipelineRunner{
 
     private sourcer : Sourcer;
-    private sourceURL : string;
-    private genres :Genre[];
     private mediaEditingClient: MediaEditingClient;
     private llmCli: LLMClient;
-    private pipelineId: String | null;
-
+    private primaryImageSourceStrategy: ImageSourceStrategy;
+    private secondaryImageSourceStrategy: ImageSourceStrategy | null
+    private pipeline : Pipeline
     private subscribers: pipeLineSubscriber[] =[];
 
-    constructor(sourcer: Sourcer,llmCli:LLMClient,mediaEditingClient: MediaEditingClient, sourceURL: string,genres: Genre[], pipelineId: String | null = null){
-        this.sourceURL = sourceURL;
-        this.sourcer = sourcer;
-        this.llmCli = llmCli;
-        this.mediaEditingClient =mediaEditingClient
-        this.genres = genres;
-        this.pipelineId = pipelineId;
-        
+    constructor(pipeline: Pipeline){
+        this.pipeline = pipeline
+        this.mediaEditingClient = new MediaEditingClient(new simpleMediaEditingAgent()) // Not expecting this to be modular soon
 
+        const sourceStrategy = createSourceStrategy(pipeline.source)
+        this.sourcer = new Sourcer(sourceStrategy)
+
+        this.primaryImageSourceStrategy = createImageSourceStrategy(pipeline.backgroundImageSource.strategy)
+        this.secondaryImageSourceStrategy = pipeline.foregroundImageSource ? createImageSourceStrategy(pipeline.foregroundImageSource.strategy) : null
+
+        this.llmCli = new LLMClient(createLLMAgent(pipeline.llm.agent))
+        
     }
 
     public addSubscriber(subscriber:pipeLineSubscriber){
         this.subscribers.push(subscriber)
 
     }
-    public notifySubscribers(post:Post){
-        this.subscribers.forEach((sub) => sub.handleReceivePost(post))
+    public async notifySubscribers(post:Post){
+        await Promise.all(
+            this.subscribers.map((sub) => sub.handleReceivePost(post))
+        )
     }
 
     public async runPipeline(){
         try{
-        //fetch feed
-       
-        const mediaObjArr :Media[]|null = await this.sourcer.source(this.sourceURL,this.genres);
+
+        const sourceRequest: SourcerRequest = {
+            pipeline: this.pipeline
+        }
+
+        const mediaObjArr :Media[]|null = await this.sourcer.source(sourceRequest);
         if(!mediaObjArr){
             throw new Error('Error in runPipeline: mediaObjArr is undefined')
         }
@@ -67,41 +79,10 @@ export default class PipelineRunner{
 
     }
 
-
-
-
-
-/*
-
-
-curl -X POST http://localhost:8000/render \
-  -H "Content-Type: application/json" \
-  -d '{
-    "bg_url": "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
-    "fg_url": "https://images.unsplash.com/photo-1519125323398-675f0ddb6308",
-    "caption": "Breaking News: Market Surges!",
-    "highlight": ["news", "market"],
-    "category": "Finance",
-    "brand": "BrandA",
-
-    "width": 1080,
-    "height": 1920,
-    "duration": 20,
-    "fps": 30,
-
-    "s3_bucket": "mediaapibucket",
-    "s3_key": "posts/demo/post.mp4",
-
-    "encoder": "libx264",
-    "preset": "medium"
-  }'
-*/
-
     public async perMediaPipeline(mediaObj: Media){
 
         try {
 
-            
             const promptStr = mediaObj.headline + " " + mediaObj.textSnippet;
 
             const newsContent = await this.llmCli.generateNewsContent(promptStr)
@@ -114,6 +95,7 @@ curl -X POST http://localhost:8000/render \
             }
 
             const keywords = newsContent.keywords;
+            
             if(!keywords){
                 console.error("Skipping media item because AI Agent did not generate keywords", {
                     headline: mediaObj.headline,
@@ -122,42 +104,43 @@ curl -X POST http://localhost:8000/render \
                 return;
             }
 
+            const imageSourceRequest = {
+                quantity: 1,
+                keywords: keywords,
+                text: newsContent.headline + " " + newsContent.summary
+            } as ImageSourceRequest
+
             const imageSourceStrategies: {
                 strategy: ImageSourceStrategy;
                 request: ImageSourceRequest;
             }[] = [
                 {
-                    strategy: new OpenverseClient(),
-                    request: {
-                        quantity: 1,
-                        keywords: [keywords[0] as string]
-                    }
+                    strategy: this.primaryImageSourceStrategy,
+                    request: imageSourceRequest
                 }
             ];
 
-            if (keywords[1]) {
+            if (this.secondaryImageSourceStrategy) {
                 imageSourceStrategies.push({
-                    strategy: new PixabayClient(),
-                    request: {
-                        quantity: 1,
-                        text: keywords[1] as string
-                    }
+                    strategy: this.secondaryImageSourceStrategy,
+                    request: imageSourceRequest
                 });
             }
 
             const fetchedImageGroups = await Promise.all(
                 imageSourceStrategies.map(({ strategy, request }) => strategy.fetchImages(request))
             );
-            const imageDataArr = fetchedImageGroups.map((images) => images[0] ?? null);
+            const backgroundImage = fetchedImageGroups[0]?.[0] ?? null;
+            const foregroundImage = fetchedImageGroups[1]?.[0] ?? null;
 
           
          
          const mediaEditingPayload = {
-            bg_url: imageDataArr[1]?.url ?? "" as String,
-            fg_url: imageDataArr[0]?.url ?? "" as String,
+            bg_url: backgroundImage?.url ?? "" as String,
+            fg_url: foregroundImage?.url ?? "" as String,
             caption: newsContent.headline,
             highlight: newsContent.highlightWords,
-            category: this.genres[0],
+            category: this.pipeline.genre[0] ?? '',
             brand: "",
             width: 1080,
             height: 1920,
@@ -172,9 +155,10 @@ curl -X POST http://localhost:8000/render \
         console.log(mediaEditingPayload)
         const renderResponse: RenderResponse = await this.mediaEditingClient.generateSimplePost(mediaEditingPayload)
         
-        const imageAttributions = imageDataArr.map((element)=>{
-            return element?.attribution
-        })
+        const imageAttributions = [backgroundImage, foregroundImage]
+            .map((element) => element?.attribution)
+            .filter((attribution): attribution is String => Boolean(attribution))
+
          const post:Post = {
             headline: newsContent.headline,
             description: newsContent.summary,
@@ -182,13 +166,13 @@ curl -X POST http://localhost:8000/render \
             videoUrl: renderResponse.video,
             mediaType: renderResponse.video ? 'Video' : 'Image',
             genre: mediaObj.genre,
-            imageAttributions:imageAttributions? imageAttributions :null,
-            pipelineId: this.pipelineId
-            
+            imageAttributions:imageAttributions.length ? imageAttributions :null,
+            pipelineId: this.pipeline.id
+
          }as Post
          console.log(post)
          
-         this.notifySubscribers(post)
+         await this.notifySubscribers(post)
         } catch (error) {
             console.error("Error in pipelineRunner perMediaPipeline(). Skipping media item.", {
                 headline: mediaObj.headline,
@@ -200,10 +184,6 @@ curl -X POST http://localhost:8000/render \
 
 
     }
-        
 
-
-
-    
 
 }

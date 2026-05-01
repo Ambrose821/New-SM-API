@@ -117,7 +117,7 @@ async def _shutdown():
 # ---- Models ----
 class RenderReq(BaseModel):
     bg_url: str
-    fg_url: str
+    fg_url: str | None
     caption: str
     highlight: list[str] = []
     category: str

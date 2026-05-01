@@ -1,8 +1,9 @@
+
 export type Genre = 'news' | 'politics' | 'sports' | 'memes' | 'humour' | 'finance' | 'crypto' | 'viral' | 'tech'
 export type Platform = 'twitter' | 'facebook' | 'instagram' | 'tiktok' | 'linkedin'
-export type SourceType = 'rssApp' | 'newsIO' | '9gag'
-export type ImageSourceType = 'openverse' | 'pixabay' | 'falAI'
-export type LLMAgentType = 'gemini-2.5-flash'
+export type SourceType = 'rssApp'
+export type ImageSourceType = 'openverse' | 'pixabay' | 'falAI' | 'wikicommons' | 'runware'
+export type LLMAgentType = 'gemini-2.5-flash' | 'gemini-3-flash-preview'
 export type PipelineFrequency = 'daily' | 'weekly' | 'monthly' | ""
 
 export interface ImageSourceConfig{
@@ -42,7 +43,7 @@ export interface Post{
     videoAttributions: String[]|null,
     audioAttributions: String [] | null,
     posted: Boolean|null
-    pipelineId: String | null
+    pipelineId: string | null
 
 }
 export interface NewsContent{
@@ -60,6 +61,7 @@ export interface ImageData{
 }
 
 export interface Pipeline{
+    id: string | undefined |null
     name: string,
     description: string | null,
     source: SourceType
@@ -118,9 +120,14 @@ export interface RenderResponse{
     details:String|null
 }
 
+
 export interface SocialAccount{
     _id:String|null|undefined,
     platform: Platform,
     handle: String,
     instagramId: String|null,
+}
+
+export interface SourcerRequest{
+    pipeline: Pipeline
 }

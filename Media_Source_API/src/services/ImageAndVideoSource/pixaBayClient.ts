@@ -5,7 +5,7 @@ import axios from "axios";
 import { ImageData } from "../../types";
 import { ImageSourceRequest, ImageSourceStrategy } from "./imageSourceStrategy";
 
-export default class PixabayClient implements ImageSourceStrategy{
+export default class PixabayImageStrategy implements ImageSourceStrategy{
 
    public constructor(){
 
@@ -13,7 +13,7 @@ export default class PixabayClient implements ImageSourceStrategy{
 
      public async fetchImages(request: ImageSourceRequest): Promise<ImageData[]> {
         const quantity = request.quantity ?? 1;
-        const keyword = request.text ?? request.keywords?.[0];
+        const keyword = request.keywords?.[1] ?? request.keywords[0];
 
         if (!keyword) {
             throw new Error("PixabayClient requires text or a keywords array request");

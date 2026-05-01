@@ -19,6 +19,11 @@ export interface LLMAgent {
 
 export class GeminiLLMAgent implements LLMAgent {
 
+    private model: string
+    constructor (model: string){
+        this.model = model
+    }
+
     async generateNewsContent(inputText: string): Promise<NewsContent | null> {
         try {
             const ai = new GoogleGenAI({
@@ -48,7 +53,7 @@ k0 = specific subject (brand/org/person/place). For countries use "<country> log
 k1 = generic scene matching theme (pick a common, visually clear scene).
 Both terms: 1–2 words, nouns only, no punctuation, no duplicates.
 Examples:
-- political violence in Pakistan → ["Pakistan logo","protest"]
+- political violence in Pakistan → ["Pakistan flag","protest"]
 - Air Canada passenger disputes → ["Air Canada","airport counter"]
 - Ukraine war update → ["Ukraine flag","soldier silhouette"]
 Return JSON per schema.`,
@@ -67,7 +72,7 @@ Return JSON per schema.`,
                 },
             };
 
-            const model = 'gemini-2.5-flash';
+            const model = this.model;
             const contents = [
                 {
                 role: 'user',

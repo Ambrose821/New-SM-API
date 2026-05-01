@@ -5,7 +5,7 @@ import { ImageSourceRequest, ImageSourceStrategy } from "./imageSourceStrategy";
 
 //For getting public Domain and creative commons images from the openverse API,
 //See API spec here https://api.openverse.org/v1/#tag/images/operation/images_detail
-export class OpenverseClient implements ImageSourceStrategy{
+export class OpenverseImageStrategy implements ImageSourceStrategy{
 
     public constructor(){
 
@@ -55,8 +55,6 @@ export class OpenverseClient implements ImageSourceStrategy{
         const url = `https://api.openverse.org/v1/images/?q=${encodeURI(keyword)}&license=pdm,cc0,by,by-sa&categories=photograph&page_size=1&page=1`
         console.log(url)
         const currentAccessToken = await OpenverseTokenHandler.getInstance().getCurrentAccessToken()
-
-        
  
         const response = await axios.get(url,{
             headers:{

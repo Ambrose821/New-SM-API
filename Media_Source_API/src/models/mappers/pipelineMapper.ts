@@ -2,9 +2,9 @@ import { Pipeline } from '../../types';
 import PipelineModel from '../pipeline';
 import mongoose from 'mongoose';
 
-export function toPipeline(doc: any): Pipeline & { _id: string } {
+export function toPipeline(doc: any): Pipeline {
   return {
-    _id: String(doc._id),
+    id: String(doc._id),
     name: doc.name,
     description: doc.description ?? null,
     source: doc.source,

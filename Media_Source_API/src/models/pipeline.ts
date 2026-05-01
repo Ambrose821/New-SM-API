@@ -6,7 +6,7 @@ const imageSourceConfigSchema = new Schema(
     {
         strategy: {
             type: String,
-            enum: ['openverse', 'pixabay', 'falAI'],
+            enum: ['openverse', 'pixabay', 'falAI', 'wikicommons', 'runware'],
             required: true,
         },
         model: {
