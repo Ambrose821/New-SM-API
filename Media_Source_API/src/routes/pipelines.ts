@@ -10,6 +10,7 @@ import {
 } from '../models/mappers/pipelineMapper'
 import { isValidSocialAccountId, socialAccountExists } from '../models/mappers/socialAccountMapper'
 import { ImageSourceType, LLMAgentType, Pipeline as PipelineType, PipelineFrequency, SourceType, PipelineRequestData } from '../types'
+import { pipelineJobProducer } from '../queues/pipelineQueue'
 
 const router = express.Router()
 
@@ -102,6 +103,29 @@ router.post('/', async (req, res) => {
     }
 })
 
+router.post('/run/:id', async (req, res) =>{
+    try{
+        const { id } = req.params
+        if (!isValidPipelineId(id)){
+            return res.status(400).json({ message: 'Invalid Pipeline id'})
+        }
+
+        const pipeline = await getPipelineById(id)
+        if(!pipeline){
+            return res.status(404).json({ message: 'Pipeline not found'})
+        }
+
+        const job = await pipelineJobProducer(pipeline)
+
+        res.status(202).json({
+            message: "Pipeline successfully triggered",
+            jobId: job.id ?? null
+        })
+    }catch(error){
+        res.status(500).json({ message: 'Error running pipeline', error })
+    }
+})
+
 router.patch('/:id', async (req, res) => {
     try{
         const { id } = req.params
@@ -154,5 +178,7 @@ router.delete('/:id', async (req, res) => {
         res.status(500).json({ message: 'Error deleting pipeline', error })
     }
 })
+
+
 
 export default router

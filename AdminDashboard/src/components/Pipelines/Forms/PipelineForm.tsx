@@ -20,7 +20,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 
 import useMediaApiState from "@/hooks/use-media-api-state"
-import type { Pipeline } from "@/types"
+import type { PipelineRequestData } from "@/types"
 
 
 type PostTemplateOption = {
@@ -154,8 +154,8 @@ function PostTypeSelector({ value, onChange }: PostTypeSelectorProps) {
 
 
 interface pipelineFormProps {
-  pipelineData: Pipeline
-  onChange: (data: Pipeline) => void
+  pipelineData: PipelineRequestData
+  onChange: (data: PipelineRequestData) => void
 }
 
 export default function PipelineForm({pipelineData, onChange}:pipelineFormProps) {

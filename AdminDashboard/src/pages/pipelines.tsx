@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -8,12 +8,28 @@ import {
 import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
 import { CreatePipelineDialog } from "@/components/Pipelines/CreatePipelineDialog";
-
+import { PipelineCard } from "@/components/Pipelines/PipelineCard";
+import type { Pipeline } from "@/types";
+import { getPipelines } from "@/util/api/pipeline";
 
 
 export default function Pipelines(){
     const [, setSearchTerm] = useState<string>('');
-    
+    const [pipelines, setPipelines] = useState<Pipeline[]>([])
+
+    useEffect(() =>{
+      const fetchPipelines = async () => {
+        try {
+          const pipelines = await getPipelines()
+          setPipelines(pipelines)
+        }catch(error: any){
+          console.error("Error fetching pipelines" + error)
+        }
+      }
+      fetchPipelines()
+    }, [])
+
+
     return (
          <div className="h-full grid grid-rows-[auto_1fr_auto]">
       
@@ -64,6 +80,20 @@ export default function Pipelines(){
 
       <div className="overflow-y-auto">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {pipelines.map((pipeline, index) => (
+              <PipelineCard
+                key={`${pipeline.name}-${pipeline.source_url}-${index}`}
+                pipeline={pipeline}
+              />
+            ))}
+          </div>
+
+          {pipelines.length === 0 && (
+            <div className="flex min-h-60 items-center justify-center rounded-lg border border-dashed text-sm text-muted-foreground">
+              No pipelines found.
+            </div>
+          )}
 
         </div>
       </div>

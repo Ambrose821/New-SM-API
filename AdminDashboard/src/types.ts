@@ -41,7 +41,33 @@ export type PipelineOptions = {
     frequencies: string[],
 }
 
+export type ImageSourceConfig = {
+    strategy: string,
+    model?: string | null,
+    systemPrompts?: string[],
+    promptInfo?: string[],
+}
+
+export type LLMConfig = {
+    agent: string,
+}
+
 export interface Pipeline{
+    id?: string | null,
+    name: string,
+    description: string | null,
+    source: string
+    source_url: string,
+    genre: string[],
+    frequency: string
+    backgroundImageSource: ImageSourceConfig,
+    foregroundImageSource: ImageSourceConfig | null,
+    llm: LLMConfig,
+    socialAccountId: string | null | undefined,
+    isActive: boolean | null,
+}
+
+export interface PipelineRequestData {
     name: string,
     description: string | null,
     source: string
@@ -51,8 +77,8 @@ export interface Pipeline{
     backgroundImageSource: string,
     foregroundImageSource: string | null,
     llm: string,
-    socialAccountId: string | null | undefined,
-    isActive: Boolean | null,
+    socialAccountId?: string | null,
+    isActive: boolean | null,
 }
 
 export type MediaApiState = {

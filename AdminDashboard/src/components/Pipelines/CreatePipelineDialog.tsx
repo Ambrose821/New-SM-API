@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dialog"
 
 import PipelineForm from "./Forms/PipelineForm"
-import type { Pipeline } from "@/types"
+import type { PipelineRequestData } from "@/types"
 
 import { toast } from "sonner"
 import { createPipeline } from "@/util/api/pipeline"
@@ -25,10 +25,10 @@ const defaultPipelineForm = {
     llm: "",
     isActive: null,
   
-} as Pipeline
+} as PipelineRequestData
 export function CreatePipelineDialog() {
 
-  const [pipelineFormData, setPipelinFormData] = useState<Pipeline>(defaultPipelineForm)
+  const [pipelineFormData, setPipelinFormData] = useState<PipelineRequestData>(defaultPipelineForm)
   const [open, setOpen] = useState<boolean>(false)
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {

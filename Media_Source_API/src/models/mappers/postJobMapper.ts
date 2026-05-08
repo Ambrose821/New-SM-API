@@ -1,5 +1,4 @@
 
-import { isNull } from 'util';
 import { PostJob } from '../../queues/types'
 import postJob from '../postJob';
 
@@ -9,7 +8,7 @@ export function toPostJob(doc: any): PostJob {
     jobId: doc.jobId,
     socialAccountId: doc.socialAccountId.toString(),
     postId: doc.postId.toString(),
-    errorMessage:null,
+    errorMessage:doc.errorMessage,
     status: doc.status
   };
 }

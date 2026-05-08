@@ -150,7 +150,7 @@ async function test(){
 
 
 try{
-test()
+// test()
 }catch(error){
   console.log(error)
 }

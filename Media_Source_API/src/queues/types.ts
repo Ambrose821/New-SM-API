@@ -10,3 +10,10 @@ export interface PostJob {
     errorMessage: string | null
 }
 
+export interface PipelineJob {
+    jobId: string,
+    pipelineId: String,
+    status: JobStatus,
+    errorMessage: string | null
+
+}

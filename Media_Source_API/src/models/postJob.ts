@@ -25,7 +25,8 @@ const postJobSchema = new Schema({
     },
     errorMessage:{
         type:String,
-        required: false,
+        required: true,
+        default: ''
     },
         
 }, { timestamps: true })
