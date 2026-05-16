@@ -1,8 +1,9 @@
 import express from 'express';
 const router = express.Router();
-import { getPosts, getPostsForPublishing, isValidPostId } from '../models/mappers/postMapper';
+import { deletePosts, getPosts, getPostsForDeletion, getPostsForPublishing, isValidPostId } from '../models/mappers/postMapper';
 import { getSocialAccountById, isValidSocialAccountId } from '../models/mappers/socialAccountMapper';
 import { postProducer } from '../queues/postingQueue';
+import { deleteS3Objects } from '../services/AWS/s3Objects';
 
 // TODO Genres should be dynamic based on DB entries
 const GENRE_OPTIONS = ['news','politics','sports','memes','humour','finance','crypto','viral','tech'];
@@ -121,6 +122,53 @@ router.post('/publish', async (req, res) => {
         });
     }catch(error){
         res.status(500).json({message: 'Error queueing post publish', error});
+    }
+})
+
+router.delete('/', async (req, res) => {
+    try{
+        const { postIds } = req.body as { postIds?: string[] };
+
+        if (!Array.isArray(postIds) || postIds.length === 0) {
+            return res.status(400).json({ message: 'postIds must be a non-empty array' });
+        }
+
+        if (postIds.some((postId) => !isValidPostId(postId))) {
+            return res.status(400).json({ message: 'All postIds must be valid ids' });
+        }
+
+        const uniquePostIds = [...new Set(postIds)];
+        const posts = await getPostsForDeletion(uniquePostIds);
+
+        if (posts.length !== uniquePostIds.length) {
+            return res.status(404).json({ message: 'One or more posts were not found' });
+        }
+
+        const s3Bucket = process.env.MEDIA_BUCKET || process.env.S3_BUCKET || 'mediaapibucket';
+        const s3Keys = posts.flatMap((post) => [
+            post.thumbnailKey ? String(post.thumbnailKey) : '',
+            post.videoKey ? String(post.videoKey) : '',
+        ]).filter(Boolean);
+
+        const s3Result = await deleteS3Objects(s3Bucket, s3Keys);
+
+        if (s3Result.errors.length > 0) {
+            return res.status(502).json({
+                message: 'Error deleting one or more S3 objects',
+                errors: s3Result.errors,
+            });
+        }
+
+        const deleteResult = await deletePosts(uniquePostIds);
+
+        res.status(200).json({
+            message: 'Posts deleted',
+            deletedPostCount: deleteResult.deletedCount ?? 0,
+            deletedS3ObjectCount: s3Result.deleted.length,
+            postIds: uniquePostIds,
+        });
+    }catch(error){
+        res.status(500).json({message: 'Error deleting posts', error});
     }
 })
 

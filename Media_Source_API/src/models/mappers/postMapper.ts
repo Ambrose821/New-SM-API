@@ -18,6 +18,8 @@ export function toPost(doc: any): Post & { _id: string } {
     description: doc.description ?? null,
     thumbnailUrl: doc.thumbnailUrl ?? null,
     videoUrl: doc.videoUrl ?? null,
+    thumbnailKey: doc.thumbnailKey ?? null,
+    videoKey: doc.videoKey ?? null,
     mediaType: doc.mediaType,
     genre: doc.genre,
     sourcedAt: doc.sourcedAt,
@@ -38,7 +40,7 @@ export async function getPosts(options: PostQueryOptions) {
     genre: { $in: options.genre },
     mediaType: { $in: options.mediaType },
     $or: [
-      { headline: { $regex: options.search, $options: 'i' } },
+      { headline: { $regex: options.search, $options: 'i'} },
       { description: { $regex: options.search, $options: 'i' } },
     ],
   };
@@ -62,3 +64,15 @@ export async function getPosts(options: PostQueryOptions) {
 export async function getPostsForPublishing(postIds: string[]) {
   return PostModel.find({ _id: { $in: postIds } }).select('_id posted').lean();
 }
+
+export async function getPostsForDeletion(postIds: string[]) {
+  return PostModel.find({ _id: { $in: postIds } })
+    .select('_id thumbnailKey videoKey')
+    .lean();
+}
+
+export async function deletePosts(postIds: string[]) {
+  return PostModel.deleteMany({ _id: { $in: postIds } });
+}
+
+

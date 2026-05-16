@@ -5,6 +5,8 @@ export interface Post{
     description: String|null,
     thumbnailUrl: string |null // thumbnail is the actualy post if no video is provided
     videoUrl : string | null
+    thumbnailKey: string | null
+    videoKey: string | null
     mediaType :'Video' | 'Image',
     genre: string[],
     sourcedAt:Date

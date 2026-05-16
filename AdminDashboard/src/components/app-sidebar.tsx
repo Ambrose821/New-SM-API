@@ -20,8 +20,10 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { ChevronsUpDown, GalleryVerticalEnd, LogOut, User,ImageUp, MessageCircleCode, FlaskConical  } from "lucide-react";
 import {useAuth,useUser,useClerk} from "@clerk/clerk-react"
+import { NavLink, useLocation } from "react-router-dom";
 
 export function AppSidebar() {
+    const location = useLocation()
     const items = [
         {
             title: "Posts",
@@ -53,11 +55,11 @@ export function AppSidebar() {
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <a href={item.path}>
+                  <SidebarMenuButton asChild isActive={location.pathname === item.path}>
+                    <NavLink to={item.path}>
                       <item.icon />
                       <span>{item.title}</span>
-                    </a>
+                    </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}

@@ -36,6 +36,8 @@ export interface Post{
     description: String|null,
     thumbnailUrl: String |null // thumbnail is the actualy post if no video is provided
     videoUrl : String | null
+    thumbnailKey: String | null
+    videoKey: String | null
     mediaType :'Video' | 'Image',
     genre: Genre[],
     sourcedAt:Date
@@ -117,6 +119,8 @@ export interface PipelineRequestData {
 export interface RenderResponse{
     video: String |null,
     thumbnail: String|null,
+    videoKey: String | null,
+    thumbnailKey: String | null,
     details:String|null
 }
 

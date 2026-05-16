@@ -217,16 +217,22 @@ def encode_and_upload(image_bytes: bytes, req: RenderReq) -> dict:
         except: pass
         try: os.remove(png_path)
         except: pass
-    thumbnail_url = upload_s3_file(image_bytes,"image/png",req.s3_bucket,req.s3_key+"thumbnail")
+    thumbnail_key = req.s3_key + "thumbnail"
+    video_key = req.s3_key
+    thumbnail_url = upload_s3_file(image_bytes,"image/png",req.s3_bucket,thumbnail_key)
 
     region = os.getenv("AWS_DEFAULT_REGION") or os.getenv("AWS_REGION") or ""
     if region in ("","us-east-1"):
         video_url= f"https://{req.s3_bucket}.s3.amazonaws.com/{req.s3_key}"
-    
+    else:
+        video_url= f"https://{req.s3_bucket}.s3.{region}.amazonaws.com/{req.s3_key}"
 
-    video_url= f"https://{req.s3_bucket}.s3.{region}.amazonaws.com/{req.s3_key}"
-
-    return{"thumbnail":thumbnail_url,"video":video_url}
+    return{
+        "thumbnail":thumbnail_url,
+        "video":video_url,
+        "thumbnailKey": thumbnail_key,
+        "videoKey": video_key
+    }
 
 @app.get("/healthz")
 async def healthz(): return {"ok": True}

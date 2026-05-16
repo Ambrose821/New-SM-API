@@ -164,6 +164,8 @@ export default class PipelineRunner{
             description: newsContent.summary,
             thumbnailUrl: renderResponse.thumbnail ,
             videoUrl: renderResponse.video,
+            thumbnailKey: renderResponse.thumbnailKey,
+            videoKey: renderResponse.videoKey,
             mediaType: renderResponse.video ? 'Video' : 'Image',
             genre: mediaObj.genre,
             imageAttributions:imageAttributions.length ? imageAttributions :null,

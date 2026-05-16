@@ -32,6 +32,16 @@ const postSchema = new Schema<Post>({
         type:String,
         required:false
     },
+    thumbnailKey:{
+        type:String,
+        required:false,
+        default:null
+    },
+    videoKey:{
+        type:String,
+        required:false,
+        default:null
+    },
     mediaType:{
         type:String,
         enum:['Video','Image']
