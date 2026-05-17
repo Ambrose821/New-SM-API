@@ -148,7 +148,7 @@ export default class PipelineRunner{
             width: 1080,
             height: 1920,
             duration: 20,
-            fps: 30,
+            fps: 1,
             audio_path:"audio.mp3",
             s3_bucket: "mediaapibucket",
             s3_key: `posts/${Date.now()}/post.mp4`,

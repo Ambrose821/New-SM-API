@@ -90,7 +90,7 @@ export interface RenderRequest{
     width: number,
     height:number,
     duration:number
-    fps:30,
+    fps:number,
     
     //Debating moving the below paramters to the api reciever side of the Media Editing API
     audio_path:String|null,
