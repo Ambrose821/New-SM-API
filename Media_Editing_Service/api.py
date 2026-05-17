@@ -250,4 +250,4 @@ async def render(req: RenderReq):
         except Exception as e:
             # Print full traceback for easier debugging
             _print(f"[Render] failed: {e}\n{traceback.format_exc()}")
-            raise HTTPException(status_code=500, detail=str(e))
+            raise HTTPException(status_code=500, detail=f"[Render] failed: {e}\n{traceback.format_exc()}")
