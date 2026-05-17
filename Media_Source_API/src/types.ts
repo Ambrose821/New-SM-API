@@ -133,5 +133,6 @@ export interface SocialAccount{
 }
 
 export interface SourcerRequest{
-    pipeline: Pipeline
+    pipeline: Pipeline,
+    quantity: number
 }

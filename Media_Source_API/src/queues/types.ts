@@ -1,3 +1,5 @@
+import type { Pipeline } from '../types'
+
 export type JobStatus = 'completed' | 'failed' | 'delayed' | 'active' | 'wait' | 'waiting-children' | 'prioritized' | 'paused' | 'repeat'
 
 
@@ -16,4 +18,9 @@ export interface PipelineJob {
     status: JobStatus,
     errorMessage: string | null
 
+}
+
+export interface PipelineRunJobData {
+    pipeline: Pipeline,
+    quantity: number
 }

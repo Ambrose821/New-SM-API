@@ -31,6 +31,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import type { Pipeline } from "@/types"
 import { runPipeline } from "@/util/api/pipeline"
 import { toast } from "sonner"
@@ -88,6 +90,9 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 
 export function PipelineCard({ pipeline }: { pipeline: Pipeline }) {
   const [isRunning, setIsRunning] = useState(false)
+  const [isRunDialogOpen, setIsRunDialogOpen] = useState(false)
+  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false)
+  const [runQuantity, setRunQuantity] = useState("15")
   const backgroundImageSource = pipeline.backgroundImageSource.strategy
   const foregroundImageSource = pipeline.foregroundImageSource?.strategy ?? "None"
   const llmAgent = pipeline.llm.agent
@@ -104,17 +109,29 @@ export function PipelineCard({ pipeline }: { pipeline: Pipeline }) {
       return
     }
 
+    const quantity = Number(runQuantity)
+    if (!Number.isInteger(quantity) || quantity <= 0) {
+      toast.error("Quantity must be a positive whole number.")
+      return
+    }
+
     setIsRunning(true)
     try {
-      const result = await runPipeline(pipelineId)
+      const result = await runPipeline(pipelineId, quantity)
       toast.success("Pipeline run queued", {
         description: result.jobId ? `Job ID: ${result.jobId}` : result.message,
       })
+      setIsRunDialogOpen(false)
     } catch {
       toast.error("Could not queue pipeline run")
     } finally {
       setIsRunning(false)
     }
+  }
+
+  const openRunDialog = () => {
+    setIsDetailsDialogOpen(false)
+    setIsRunDialogOpen(true)
   }
 
   return (
@@ -191,16 +208,42 @@ export function PipelineCard({ pipeline }: { pipeline: Pipeline }) {
       </CardContent>
 
       <CardFooter className="mt-auto gap-2 border-t px-5 py-4">
-        <Button
-          size="sm"
-          className="flex-1 gap-2"
-          onClick={handleRunPipeline}
-          disabled={isRunning}
-        >
-          <Activity className="size-4" />
-          {isRunning ? "Queueing" : "Run"}
-        </Button>
-        <Dialog>
+        <Dialog open={isRunDialogOpen} onOpenChange={setIsRunDialogOpen}>
+          <DialogTrigger asChild>
+            <Button size="sm" className="flex-1 gap-2" disabled={isRunning}>
+              <Activity className="size-4" />
+              {isRunning ? "Queueing" : "Run"}
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Run Pipeline</DialogTitle>
+              <DialogDescription>
+                Choose how many final posts this run should create.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="grid gap-2">
+              <Label htmlFor={`pipeline-run-quantity-${pipelineId}`}>Quantity</Label>
+              <Input
+                id={`pipeline-run-quantity-${pipelineId}`}
+                type="number"
+                min={1}
+                step={1}
+                value={runQuantity}
+                onChange={(event) => setRunQuantity(event.target.value)}
+              />
+            </div>
+
+            <DialogFooter>
+              <Button className="gap-2" onClick={handleRunPipeline} disabled={isRunning}>
+                <Activity className="size-4" />
+                {isRunning ? "Queueing" : "Run Pipeline"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        <Dialog open={isDetailsDialogOpen} onOpenChange={setIsDetailsDialogOpen}>
           <DialogTrigger asChild>
             <Button size="sm" variant="outline" className="flex-1">
               Details
@@ -262,9 +305,9 @@ export function PipelineCard({ pipeline }: { pipeline: Pipeline }) {
             </div>
 
             <DialogFooter showCloseButton>
-              <Button className="gap-2" onClick={handleRunPipeline} disabled={isRunning}>
+              <Button className="gap-2" onClick={openRunDialog} disabled={isRunning}>
                 <Activity className="size-4" />
-                {isRunning ? "Queueing" : "Run Pipeline"}
+                Run Pipeline
               </Button>
             </DialogFooter>
           </DialogContent>

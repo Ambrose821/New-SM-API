@@ -35,9 +35,12 @@ export const getPipelines = async ():Promise<Pipeline[]> => {
     }
 }
 
-export const runPipeline = async (pipelineId: string): Promise<{ message: string; jobId: string | null }> => {
+export const runPipeline = async (
+    pipelineId: string,
+    quantity: number
+): Promise<{ message: string; jobId: string | null }> => {
     try {
-        const response = await api.post(`/pipelines/run/${pipelineId}`)
+        const response = await api.post(`/pipelines/run/${pipelineId}`, { quantity })
         return response.data
     } catch(error){
         console.error("Error running pipeline: " + error)

@@ -9,9 +9,9 @@ import {
   DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu"; // <-- all from shadcn
 import { Button } from "@/components/ui/button";
-import { ChevronDown } from "lucide-react";
+import { Check, ChevronDown,Trash } from "lucide-react";
 import Paginator from "@/components/Paginator/paginator";
-import { getPosts,getGenres,publishPosts } from "@/util/api/posts";
+import { getPosts,getGenres,publishPosts, deletePosts } from "@/util/api/posts";
 import { getSocials } from "@/util/api/socials";
 import { useTargetSocial } from "@/hooks/use-target-social";
 import {
@@ -49,7 +49,8 @@ const [page,setPage] = useState<number>(1)
 const [displayedPosts,setDisplayedPosts] = useState<Post[]>([])
 
 const [filteredGenres,setFilteredGenres] = useState<Set<string>>(new Set())
-const [selectedPostIds, setSelectedPostIds] = useState<Set<string>>(new Set())
+const [selectedPostIdsForPublishing, setSelectedPostIdsForPublishing] = useState<Set<string>>(new Set())
+const [selectedPostIdsForDeletion, setSelectedPostIdsForDeletion] = useState<Set<string>>(new Set())
 const [socialAccounts, setSocialAccounts] = useState<SocialAccount[]>([])
 const [isPostNowDialogOpen, setIsPostNowDialogOpen] = useState(false)
 const [isBulkTargetDialogOpen, setIsBulkTargetDialogOpen] = useState(false)
@@ -59,13 +60,12 @@ const [pendingPost, setPendingPost] = useState<Post | null>(null)
 const [fullPost, setFullPost] = useState<Post | null>(null)
 const [isConfirmingPostNow, setIsConfirmingPostNow] = useState(false)
 const [isConfirmingBulkPost, setIsConfirmingBulkPost] = useState(false)
+const [isDeleting, setIsDeleting] = useState<boolean>(false)
+const [isConfirmingDelete, setIsConfirmingDelete] = useState<boolean>(false)
 
 const { socalAccount: targetSocial, setSocialAccount } = useTargetSocial()
 
-
-
-useEffect(() =>{
-  const fetchGenresAndPosts = async () => {
+ const fetchGenresAndPosts = async () => {
     try {
       const filteredGenresArray = Array.from(filteredGenres);
       const genreParam = filteredGenresArray.length > 0 ? filteredGenresArray.join(',') : 'all';
@@ -78,6 +78,9 @@ useEffect(() =>{
       console.error('Error fetching genres:', error);
     }
   };
+
+
+useEffect(() =>{
   fetchGenresAndPosts();
 },[searchTerm,filteredGenres,page])
 
@@ -101,7 +104,7 @@ useEffect(() => {
 useEffect(() => {
   if (!targetSocial) {
     console.log("** No target social")
-    setSelectedPostIds(new Set())
+    setSelectedPostIdsForPublishing(new Set())
   }
 }, [targetSocial])
 
@@ -116,7 +119,9 @@ const toggleGenre = (genre: string,checked : boolean)=>{
 }
 
 const handleTargetPostSelection = (postId: string, checked: boolean) => {
-  setSelectedPostIds((previousSelection) => {
+  const setSelection = isDeleting ? setSelectedPostIdsForDeletion : setSelectedPostIdsForPublishing
+
+  setSelection((previousSelection) => {
     const nextSelection = new Set(previousSelection)
     if (checked) {
       nextSelection.add(postId)
@@ -128,6 +133,10 @@ const handleTargetPostSelection = (postId: string, checked: boolean) => {
 }
 
 const handlePostNowClick = (post: Post) => {
+  if (isDeleting) {
+    return
+  }
+
   setPendingPost(post)
   setSelectedPostingAccountId("")
   setIsConfirmingPostNow(false)
@@ -159,9 +168,21 @@ const handleConfirmPostNow = async () => {
 }
 
 const handleOpenBulkTargetDialog = () => {
+  if (isDeleting) {
+    return
+  }
+
   setSelectedTargetAccountId(targetSocial?._id ? String(targetSocial._id) : "")
-  setIsConfirmingBulkPost(targetSocial !== null)
+  setIsConfirmingBulkPost(targetSocial !== null && selectedPostIdsForPublishing.size > 0)
   setIsBulkTargetDialogOpen(true)
+}
+
+const handleOpenDeleteDialog = () => {
+  if (targetSocial) {
+    return
+  }
+
+  setIsConfirmingDelete(true)
 }
 
 const handleClosePostNowDialog = (open: boolean) => {
@@ -171,6 +192,10 @@ const handleClosePostNowDialog = (open: boolean) => {
     setSelectedPostingAccountId("")
     setIsConfirmingPostNow(false)
   }
+}
+
+const handleCloseDeleteConfirmDialog = (open: boolean) => {
+  setIsConfirmingDelete(open)
 }
 
 const handleCloseBulkTargetDialog = (open: boolean) => {
@@ -189,6 +214,10 @@ const handleContinueToConfirm = () => {
 }
 
 const handleSetTargetSocial = () => {
+  if (isDeleting) {
+    return
+  }
+
   const selectedTargetAccount = socialAccounts.find(
     (account) => String(account._id) === selectedTargetAccountId
   )
@@ -198,34 +227,85 @@ const handleSetTargetSocial = () => {
   }
 
   setSocialAccount(selectedTargetAccount)
-  setIsConfirmingBulkPost(true)
+  setSelectedTargetAccountId("")
+  setIsConfirmingBulkPost(false)
+  setIsBulkTargetDialogOpen(false)
 }
 
 const handleConfirmBulkPost = async () => {
+  if (isDeleting) {
+    return
+  }
+
   const selectedTargetAccount = socialAccounts.find(
     (account) => String(account._id) === selectedTargetAccountId
   ) ?? targetSocial
 
-  if (!selectedTargetAccount?._id || selectedPostIds.size === 0) {
+  if (!selectedTargetAccount?._id || selectedPostIdsForPublishing.size === 0) {
     return
   }
 
-  const success = await publishPosts(Array.from(selectedPostIds), String(selectedTargetAccount._id))
+  const success = await publishPosts(Array.from(selectedPostIdsForPublishing), String(selectedTargetAccount._id))
   if (!success) {
     toast.error("Failed to queue selected posts for publishing")
     return
   }
 
-  toast.success(`Queued ${selectedPostIds.size} item(s) for ${selectedTargetAccount.handle}`)
+  toast.success(`Queued ${selectedPostIdsForPublishing.size} item(s) for ${selectedTargetAccount.handle}`)
   setIsBulkTargetDialogOpen(false)
   setSelectedTargetAccountId("")
   setIsConfirmingBulkPost(false)
-  setSelectedPostIds(new Set())
+  setSelectedPostIdsForPublishing(new Set())
 }
 
+const handleConfirmDeletePosts = async () => {
+  if (!isDeleting || targetSocial) {
+    return
+  }
+
+  const result = await deletePosts(Array.from(selectedPostIdsForDeletion))
+  if(result){
+    toast("Posts Deleted")
+  }
+  else{
+    toast("Error Deleting Posts")
+  }
+
+  setSelectedPostIdsForDeletion(new Set())
+  setIsDeleting(false)
+  setIsConfirmingDelete(false)
+  fetchGenresAndPosts()
+}
+
+
 const handleBulkPostCancel = () => {
-  setSelectedPostIds(new Set());
+  setSelectedPostIdsForPublishing(new Set());
   setSocialAccount(null);
+}
+
+const handleSetPostDeleting = () => {
+  setSocialAccount(null)
+  setSelectedPostIdsForPublishing(new Set())
+  setSelectedPostIdsForDeletion(new Set())
+  setIsConfirmingBulkPost(false)
+  setIsBulkTargetDialogOpen(false)
+  setIsConfirmingDelete(false)
+  setIsDeleting((current) => !current)
+}
+
+const handleSelectDisplayed = (checked: boolean) => {
+  if(!checked){
+    setSelectedPostIdsForDeletion(new Set())
+    return
+  }
+  const postIds = displayedPosts
+    .map((p) => (p._id))
+    .filter((id): id is string => typeof id === "string" && id.length>0)
+
+  if(postIds.length> 0){
+    setSelectedPostIdsForDeletion(new Set(postIds))
+  }
+  
 }
 
 const selectedAccount = socialAccounts.find(
@@ -234,6 +314,7 @@ const selectedAccount = socialAccounts.find(
 const selectedBulkAccount = socialAccounts.find(
   (account) => String(account._id) === selectedTargetAccountId
 ) ?? targetSocial
+const activeSelectedPostIds = isDeleting ? selectedPostIdsForDeletion : selectedPostIdsForPublishing
 
   return (
     
@@ -280,46 +361,66 @@ const selectedBulkAccount = socialAccounts.find(
               </DropdownMenu>
 
              {!targetSocial && 
-              <Button onClick={handleOpenBulkTargetDialog}>
+              <Button onClick={handleOpenBulkTargetDialog} disabled={isDeleting}>
                 Bulk post
               </Button>}
+            
+              <Button 
+                className="bg-red-100 text-red-500 hover:bg-red-500 hover:text-white"
+                onClick={handleSetPostDeleting}
+                disabled={targetSocial ? true : false}
+              >
+               { isDeleting ? <span>Cancel</span> : <Trash/>} 
+              </Button>
         
 
             </div>
           </div>
-          {targetSocial && 
-            <div className="mt-4 flex flex-col gap-3 rounded-lg border bg-gray-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          {(targetSocial || isDeleting) && 
+            <div className="relative mt-4 flex flex-col gap-3 rounded-lg border bg-gray-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-sm font-semibold">Selecting posts for {targetSocial.handle}</p>
-                <p className="text-sm font-semibold">({selectedPostIds.size}) post(s)</p>
+                <p className="text-sm font-semibold">Selecting posts for {targetSocial ? targetSocial.handle : "Deletion"}</p>
+                <p className="text-sm font-semibold">({activeSelectedPostIds.size}) post(s)</p>
                 
-                <p className="text-sm text-gray-600">
-                  Choose the posts you want to send to this account.
-                </p>
               </div>
+
               <div className="flex flex-row gap-4 ">
               <Button
-                onClick={handleOpenBulkTargetDialog}
-                disabled={selectedPostIds.size === 0}
+                onClick={targetSocial ? handleOpenBulkTargetDialog : handleOpenDeleteDialog}
+                disabled={activeSelectedPostIds.size === 0}
               >
-                Post selected now
+               {targetSocial ? "Post Now" : "Delete"} 
               </Button>
-              <Button
-                onClick={handleBulkPostCancel}
-                className="bg-red-700"
-              >
-                Cancel
-              </Button>
-              
+              {targetSocial &&
+                <Button
+                  onClick={handleBulkPostCancel}
+                  className="bg-red-700"
+                >
+                  Cancel
+                </Button>
+              }
               </div>
             </div>
           
           }
+         {isDeleting && <label htmlFor="delete-displayed" className="flex cursor-pointer flex-row items-center gap-4 bg-transparent">
+            <span>Select Displayed</span>
+            <input
+              type="checkbox"
+              id="delete-displayed"
+              className="peer sr-only"
+              onChange={(event) => handleSelectDisplayed(event.target.checked)}
+            />
+            <span className="flex size-4 items-center justify-center rounded-sm border border-gray-400 bg-transparent transition-colors peer-checked:[&>svg]:visible">
+              <Check className="invisible size-3 text-black" strokeWidth={3} />
+            </span>
+          </label>
+         }
         </div>
       </div>
 
       <div className="overflow-y-auto">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
+        <div className=" flex items-center justify-center mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
   
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
             {displayedPosts.map((post) => (
@@ -327,9 +428,9 @@ const selectedBulkAccount = socialAccounts.find(
               <div key={String(post._id ?? post.headline)} className="flex">
                 <PostCard
                   post={post}
-                  showTargetSelector={targetSocial ? true : false}
-                  isSelected={post._id ? selectedPostIds.has(String(post._id)) : false}
-                  isPostNowDisabled={targetSocial ? true : false}
+                  showTargetSelector={(targetSocial || isDeleting) ? true : false}
+                  isSelected={post._id ? activeSelectedPostIds.has(String(post._id)) : false}
+                  isPostNowDisabled={(targetSocial || isDeleting) ? true : false}
                   onSelectedChange={(checked) => {
                     if (!post._id) {
                       return
@@ -355,6 +456,39 @@ const selectedBulkAccount = socialAccounts.find(
         }
        }/>
       </div>
+
+      <Dialog open={isConfirmingDelete} onOpenChange={handleCloseDeleteConfirmDialog}>
+        <DialogContent className="sm:max-w-sm">
+           <DialogHeader>
+            <DialogTitle>Delete these posts</DialogTitle>
+            <DialogDescription>
+              Are you sure you would like to delete these posts?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    handleCloseDeleteConfirmDialog(false)
+                  }}
+                >
+                  No
+                </Button>
+                <Button 
+                  className="bg-red-500 text-white"
+                  type="button"
+                  onClick={handleConfirmDeletePosts}
+                >
+                  Yes
+                </Button>
+              </>
+          </DialogFooter>
+        </DialogContent>
+
+      </Dialog>
+
       <Dialog open={isPostNowDialogOpen} onOpenChange={handleClosePostNowDialog}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
@@ -430,7 +564,7 @@ const selectedBulkAccount = socialAccounts.find(
             <DialogTitle>{isConfirmingBulkPost ? "Post selected now" : "Select account"}</DialogTitle>
             <DialogDescription>
               {isConfirmingBulkPost
-                ? `Confirm posting ${selectedPostIds.size} selected item(s) to ${selectedBulkAccount?.handle}.`
+                ? `Confirm posting ${selectedPostIdsForPublishing.size} selected item(s) to ${selectedBulkAccount?.handle}.`
                 : "Choose the account you want to target for bulk posting."}
             </DialogDescription>
           </DialogHeader>
@@ -453,7 +587,7 @@ const selectedBulkAccount = socialAccounts.find(
             </div>
           ) : (
             <div className="rounded-lg border bg-gray-50 px-4 py-3 text-sm">
-              You are about to post {selectedPostIds.size} selected item(s) to {selectedBulkAccount?.handle}.
+              You are about to post {selectedPostIdsForPublishing.size} selected item(s) to {selectedBulkAccount?.handle}.
             </div>
           )}
           <DialogFooter>
@@ -475,7 +609,7 @@ const selectedBulkAccount = socialAccounts.find(
                 <Button
                   type="button"
                   onClick={handleConfirmBulkPost}
-                  disabled={selectedPostIds.size === 0}
+                  disabled={selectedPostIdsForPublishing.size === 0}
                 >
                   Confirm
                 </Button>

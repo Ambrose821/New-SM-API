@@ -43,4 +43,14 @@ const publishPosts = async (postIds: string[], socialAccountId:string) =>{
     }
 }
 
-export {getPosts,getGenres,publishPosts};
+const deletePosts = async (postIds: string []) =>{
+    try{
+        await api.delete('/posts', {data: {postIds: postIds}})
+        return true
+    }catch(error:any){
+        console.log(error.message? error.message: error)
+        return false
+    }
+}
+
+export {getPosts,getGenres,publishPosts,deletePosts};

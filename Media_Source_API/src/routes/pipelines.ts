@@ -18,6 +18,7 @@ const SOURCE_OPTIONS: SourceType[] = ['rssApp']
 const IMAGE_SOURCE_OPTIONS: ImageSourceType[] = ['openverse', 'pixabay', 'falAI', 'wikicommons', 'runware']
 const LLM_AGENT_OPTIONS: LLMAgentType[] = ['gemini-2.5-flash']
 const FREQUENCY_OPTIONS: PipelineFrequency[] = ['daily', 'weekly', 'monthly']
+const DEFAULT_PIPELINE_RUN_QUANTITY = 15
 
 router.get('/', async (req, res) => {
     try{
@@ -106,6 +107,12 @@ router.post('/', async (req, res) => {
 router.post('/run/:id', async (req, res) =>{
     try{
         const { id } = req.params
+        const quantity = Number(req.body?.quantity ?? DEFAULT_PIPELINE_RUN_QUANTITY)
+
+        if (!Number.isInteger(quantity) || quantity <= 0) {
+            return res.status(400).json({ message: 'Quantity must be a positive integer' })
+        }
+
         if (!isValidPipelineId(id)){
             return res.status(400).json({ message: 'Invalid Pipeline id'})
         }
@@ -115,7 +122,7 @@ router.post('/run/:id', async (req, res) =>{
             return res.status(404).json({ message: 'Pipeline not found'})
         }
 
-        const job = await pipelineJobProducer(pipeline)
+        const job = await pipelineJobProducer({ pipeline, quantity })
 
         res.status(202).json({
             message: "Pipeline successfully triggered",

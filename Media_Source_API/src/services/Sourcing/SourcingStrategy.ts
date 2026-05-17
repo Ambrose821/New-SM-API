@@ -41,8 +41,9 @@ export class RssAppStrategy implements SourcingStrategy{
                 throw new Error("Error in RssAppStrategy: SourceRequest for this strategy requires a pipeline with a URL")
             }
             const feed = await getRssFeed(url)
-          // console.log(feed)
-            const mediaObjects = feed.map((feedItem:any) =>{
+            const limitedFeed = feed.slice(0, sourceRequest.quantity)
+
+            const mediaObjects = limitedFeed.map((feedItem:any) =>{
                  const mediaObj: Media =
                     {
                     headline:feedItem.title,

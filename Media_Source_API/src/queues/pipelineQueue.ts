@@ -2,9 +2,8 @@ import { Job, Queue, Worker } from 'bullmq'
 import IORedis from 'ioredis'
 import PipelineRunner from '../pipeline/pipelineRunner'
 import {createJob, updateJob} from "../models/mappers/pipelineJobMapper"
-import type { Pipeline } from '../types'
 import { mongoSubscriber } from '../pipeline/pipelineSubscribers/mongoSubscriber'
-import { PipelineJob } from './types'
+import { PipelineJob, PipelineRunJobData } from './types'
 
 const connection = new IORedis({
     host: process.env.REDIS_HOST || 'cache',
@@ -13,14 +12,14 @@ const connection = new IORedis({
 })
 
 
-const pipelineQueue = new Queue<Pipeline>('pipeline', {
+const pipelineQueue = new Queue<PipelineRunJobData>('pipeline', {
     connection
 })
 
 
-const pipelineWorker = new Worker<Pipeline>('pipeline', async job =>{
-    const pipeline = job.data as Pipeline
-    const pipelineRunner = new PipelineRunner(pipeline)
+const pipelineWorker = new Worker<PipelineRunJobData>('pipeline', async job =>{
+    const { pipeline, quantity } = job.data
+    const pipelineRunner = new PipelineRunner(pipeline, quantity)
    pipelineRunner.addSubscriber(new mongoSubscriber())
     await pipelineRunner.runPipeline()
 },{connection})
@@ -34,14 +33,14 @@ pipelineWorker.on('failed', async (job, err)=>{
     await job!.remove()
 })
 
-export const pipelineJobProducer = async (jobData: Pipeline ) : Promise<Job<Pipeline>> =>{
+export const pipelineJobProducer = async (jobData: PipelineRunJobData ) : Promise<Job<PipelineRunJobData>> =>{
     const job = await pipelineQueue.add('pipeline_run',jobData,{
         removeOnComplete:true,
         removeOnFail:false
     })
 
     const jobId = job.id!
-    const pipelineId = String(jobData.id)
+    const pipelineId = String(jobData.pipeline.id)
     await createJob({
         jobId: jobId,
         pipelineId:pipelineId as String

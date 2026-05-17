@@ -29,10 +29,12 @@ export default class PipelineRunner{
     private primaryImageSourceStrategy: ImageSourceStrategy;
     private secondaryImageSourceStrategy: ImageSourceStrategy | null
     private pipeline : Pipeline
+    private quantity: number
     private subscribers: pipeLineSubscriber[] =[];
 
-    constructor(pipeline: Pipeline){
+    constructor(pipeline: Pipeline, quantity = 15){
         this.pipeline = pipeline
+        this.quantity = quantity
         this.mediaEditingClient = new MediaEditingClient(new simpleMediaEditingAgent()) // Not expecting this to be modular soon
 
         const sourceStrategy = createSourceStrategy(pipeline.source)
@@ -59,7 +61,8 @@ export default class PipelineRunner{
         try{
 
         const sourceRequest: SourcerRequest = {
-            pipeline: this.pipeline
+            pipeline: this.pipeline,
+            quantity: this.quantity
         }
 
         const mediaObjArr :Media[]|null = await this.sourcer.source(sourceRequest);
