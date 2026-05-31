@@ -32,13 +32,12 @@ const getGenres = async () =>{
 
 const publishPosts = async (postIds: string[], socialAccountId:string) =>{
     try{
-        await api.post('/posts/publish',{postIds:postIds,socialAccountId:socialAccountId}) 
-        // TODO, Do something with this data?
-        return true
+        const response = await api.post('/posts/publish',{postIds:postIds,socialAccountId:socialAccountId})
+        return response.data
 
     }catch(error:any){
-        console.log(error.message? error.message: error)
-        return false
+        console.error(error.response?.data ?? error.message ?? error)
+        return null
 
     }
 }

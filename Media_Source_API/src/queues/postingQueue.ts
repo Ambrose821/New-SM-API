@@ -81,7 +81,8 @@ export const postProducer = async (jobData: PostingJobData): Promise<Job<Posting
         jobId,
         socialAccountId,
         postId
-    } as PostJob)
+    } as PostJob).catch((error) => {
+        console.error(`Failed to persist post job ${jobId}, but the job was already queued`, error)
+    })
     return job
 }
-
