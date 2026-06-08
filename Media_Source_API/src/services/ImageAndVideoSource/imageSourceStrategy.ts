@@ -5,6 +5,7 @@ export type ImageSourceRequest =
           quantity?: number;
           keywords: string[];
           text: string;
+          diffusion_prompts?: string[]
       }
 
 export interface ImageSourceStrategy {

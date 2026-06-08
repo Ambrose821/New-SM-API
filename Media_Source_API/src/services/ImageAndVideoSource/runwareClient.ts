@@ -114,7 +114,7 @@ export class RunwareImageStrategy implements ImageSourceStrategy {
     }
 
     private buildPrompt(request: ImageSourceRequest) {
-        const topic = request.text?.trim() || request.keywords?.filter(Boolean).join(", ");
+        const topic = request.diffusion_prompts?.filter(Boolean).join(", ") || request.text?.trim() || request.keywords?.filter(Boolean).join(", ");
 
         if (!topic) {
             throw new Error("RunwareClient requires text or a keywords array request");

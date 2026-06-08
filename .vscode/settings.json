@@ -1,0 +1,8 @@
+{
+    "python-envs.defaultEnvManager": "ms-python.python:system",
+    "python.defaultInterpreterPath": "${workspaceFolder}/AIMediaInvestigator/venv/bin/python",
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/AIMediaInvestigator/venv/lib/python3.14/site-packages"
+    ],
+    "python.terminal.activateEnvironment": true
+}
