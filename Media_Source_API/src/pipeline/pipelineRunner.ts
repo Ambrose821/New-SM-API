@@ -1,7 +1,7 @@
 import {Media,Genre, RenderRequest, RenderResponse, Post} from "../types";
 
 import Sourcer from "../services/Sourcing/Sourcer";
-import type { Pipeline, SourcerRequest } from "../types";
+import type { Pipeline, SourcerRequest, LlmRequest } from "../types";
 
 import { LLMAgent,GeminiLLMAgent } from '../services/LlmServices/LLMAgent'
 import { LLMClient } from '../services/LlmServices/LLMClient'
@@ -13,6 +13,7 @@ import { createSourceStrategy } from "../factories/SourceStrategyFacrory";
 import { simpleMediaEditingAgent } from "../services/MediaEditing/MediaEditingAgent";
 import { createImageSourceStrategy } from "../factories/ImageSourceFactory";
 import { createLLMAgent } from "../factories/LlmAgentFactory";
+import { text } from "stream/consumers";
 
 
 /*
@@ -87,8 +88,13 @@ export default class PipelineRunner{
         try {
 
             const promptStr = mediaObj.headline + " " + mediaObj.textSnippet;
+            const llmReq = {
+                text: promptStr,
+                url: mediaObj.sourceURL
+            } as LlmRequest
 
-            const newsContent = await this.llmCli.generateNewsContent(promptStr)
+            const newsContent = await this.llmCli.generateNewsContent(llmReq)
+            console.log(newsContent)
             if(!newsContent){
                 console.error("Skipping media item because AI content generation returned null", {
                     headline: mediaObj.headline,
@@ -99,13 +105,14 @@ export default class PipelineRunner{
 
             const keywords = newsContent.keywords;
             
-            if(!keywords){
-                console.error("Skipping media item because AI Agent did not generate keywords", {
-                    headline: mediaObj.headline,
-                    genre: mediaObj.genre,
-                });
-                return;
-            }
+            // Wild that i didn't delegate this to the strategy
+            // if(!keywords){
+            //     console.error("Skipping media item because AI Agent did not generate keywords", {
+            //         headline: mediaObj.headline,
+            //         genre: mediaObj.genre,
+            //     });
+            //     return;
+            // }
 
             const imageSourceRequest = {
                 quantity: 1,

@@ -27,7 +27,7 @@ const llmConfigSchema = new Schema(
     {
         agent: {
             type: String,
-            enum: ['gemini-2.5-flash'],
+            enum: ['gemini-2.5-flash','investigate-api'],
             required: true,
         },
         model: {

@@ -1,5 +1,6 @@
 import { NewsContent } from "../../types";
-import { LLMAgent,GeminiLLMAgent } from "./LLMAgent";
+import { LLMAgent } from "./LLMAgent";
+import type { LlmRequest } from "../../types"
 
 export class LLMClient {
     private LLMAgent : LLMAgent;
@@ -8,11 +9,11 @@ export class LLMClient {
         this.LLMAgent = agent
     }
 
-    public async generateNewsContent(inputText: string): Promise<NewsContent|null> {
+    public async generateNewsContent(request: LlmRequest): Promise<NewsContent|null> {
         
         try{
             //console.log("input: ", inputText)
-            const newsContent = await this.LLMAgent.generateNewsContent(inputText);
+            const newsContent = await this.LLMAgent.generateNewsContent(request);
             return newsContent;
         }catch(error){
             throw new Error("Error in LLMClient at generateNewsContent(): " +error);

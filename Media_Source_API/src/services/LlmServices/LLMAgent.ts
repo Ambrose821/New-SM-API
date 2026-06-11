@@ -1,5 +1,6 @@
 import { json } from "stream/consumers";
 import { NewsContent } from "../../types";
+import type { LlmRequest } from "../../types"
 
 import {
   GoogleGenAI,
@@ -13,7 +14,7 @@ import {
 
 export interface LLMAgent {
 
-    generateNewsContent(inputText:string):Promise<NewsContent| null>;
+    generateNewsContent(request: LlmRequest):Promise<NewsContent| null>;
 
 }
 
@@ -24,8 +25,12 @@ export class GeminiLLMAgent implements LLMAgent {
         this.model = model
     }
 
-    async generateNewsContent(inputText: string): Promise<NewsContent | null> {
+    async generateNewsContent(request: LlmRequest): Promise<NewsContent | null> {      
         try {
+            if(!request.text){
+                throw new Error("Gemini Agent did not recieve a text prompt")
+            }
+
             const ai = new GoogleGenAI({
                 apiKey: process.env.GEMINI_API_KEY,
             });
@@ -78,7 +83,7 @@ Return JSON per schema.`,
                 role: 'user',
                 parts: [
                     {
-                    text: inputText,
+                    text: request.text ,
                     },
                 ],
                 },
@@ -94,7 +99,7 @@ Return JSON per schema.`,
             }
             //console.log(tempString)
             if(tempString.includes('NULL')){
-                throw new Error("Error in GeminiLLMAgent: Gemini Agent returned a NULL field for input: " +inputText)
+                throw new Error("Error in GeminiLLMAgent: Gemini Agent returned a NULL field for input: " + request.text)
             }
             const jsonRes = JSON.parse(tempString)
             //console.log(jsonRes)
@@ -105,8 +110,7 @@ Return JSON per schema.`,
             
             return newsContent
             
-        } catch (error: any) {
-                
+        } catch (error: any) {    
              console.error("Error with gemini api call generate_text_and_headline_short():", error);
 
     // Check for 429 or quota error
@@ -121,7 +125,7 @@ Return JSON per schema.`,
         console.log("======================================================================");
         console.error("Gemini rate limiting or quota error. Waiting 60 seconds then continuing");
         await new Promise((p) => setTimeout(p, 60000));
-        return this.generateNewsContent(inputText);
+        return this.generateNewsContent(request);
     }else{
         throw new Error("Error in GeminiLLMAgent: " + error);  
         }

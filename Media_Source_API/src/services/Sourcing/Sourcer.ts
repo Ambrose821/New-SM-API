@@ -10,7 +10,7 @@ export default class Sourcer{
         this.sourcingStrategy = sourcingStrategy;
     }
 
-    public async source(request: SourcerRequest): Promise<Media []|null>{
+    public async source(request: SourcerRequest): Promise<Media []| null>{
         try{
             const newMediaArr =  await this.sourcingStrategy.source(request);
             return newMediaArr; 

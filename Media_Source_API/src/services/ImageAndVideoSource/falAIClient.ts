@@ -43,7 +43,7 @@ export class FalAIImageStrategy implements ImageSourceStrategy {
              credentials: this.falApiKey
         });
 
-        const prompt_keywords = request.diffusion_prompts ? request.diffusion_prompts : request.keywords
+        const prompt_keywords = request.diffusion_prompts?.length ? request.diffusion_prompts : request.keywords
         const result = await fal.subscribe(this.modelName, {
         input: {
             prompt: this.systemPrompt + (prompt_keywords.join(',')),

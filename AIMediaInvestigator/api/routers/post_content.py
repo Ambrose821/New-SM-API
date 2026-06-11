@@ -22,10 +22,13 @@ async def get_post_content(
     searcher = PageSearcher(llm=llm)
     system_prompt = request.prompt or SYSTEM_PROMPT
     out = await searcher.page_to_post_content(url=request.url,system_prompt=system_prompt)
+
+    bullet_points_list = [f"👉 {point}" for point in out.caption.bullet_points]
+    bullet_points = "\n" + "\n".join(bullet_points_list) + "\n"
     caption = "\n".join(
         [
             out.caption.short_hook,
-            *out.caption.bullet_points,
+            bullet_points,
             out.caption.question,
         ]
     )
@@ -35,3 +38,6 @@ async def get_post_content(
         "keywords": [out.image_search_keywords.background_key_word],
         "diffusion_prompts": out.diffusion_prompts.visual_subjects,
     }
+
+
+

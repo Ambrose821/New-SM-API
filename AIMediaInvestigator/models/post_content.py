@@ -71,9 +71,6 @@ class DiffusionImageBrief(BaseModel):
         description="Visual style, mood, lighting, and composition. Example: 'cinematic editorial illustration', 'vertical 9:16 poster', 'dramatic lighting', 'space for headline text'."
     )
 
-    negative_prompt: list[str] = Field(
-        description="Things to avoid in the generated image, including unwanted styles, bad quality, artifacts, text errors, or irrelevant subjects."
-    )
 
 class PostContent(BaseModel):
 

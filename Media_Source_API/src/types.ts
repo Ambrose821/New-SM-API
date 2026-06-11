@@ -3,7 +3,7 @@ export type Genre = 'news' | 'politics' | 'sports' | 'memes' | 'humour' | 'finan
 export type Platform = 'twitter' | 'facebook' | 'instagram' | 'tiktok' | 'linkedin'
 export type SourceType = 'rssApp'
 export type ImageSourceType = 'openverse' | 'pixabay' | 'falAI' | 'wikicommons' | 'runware'
-export type LLMAgentType = 'gemini-2.5-flash' | 'gemini-3-flash-preview'
+export type LLMAgentType = 'gemini-2.5-flash' | 'gemini-3-flash-preview' | "investigate-api"
 export type PipelineFrequency = 'daily' | 'weekly' | 'monthly' | ""
 
 export interface ImageSourceConfig{
@@ -32,27 +32,28 @@ export interface Media{
 }
 
 export interface Post{
-    headline: String,
-    description: String|null,
-    thumbnailUrl: String |null // thumbnail is the actualy post if no video is provided
-    videoUrl : String | null
-    thumbnailKey: String | null
-    videoKey: String | null
+    headline: string,
+    description: string|null,
+    thumbnailUrl: string |null // thumbnail is the actualy post if no video is provided
+    videoUrl : string | null
+    thumbnailKey: string | null
+    videoKey: string | null
     mediaType :'Video' | 'Image',
     genre: Genre[],
     sourcedAt:Date
-    imageAttributions: String[] | null,
-    videoAttributions: String[]|null,
-    audioAttributions: String [] | null,
+    imageAttributions: string[] | null,
+    videoAttributions: string[]|null,
+    audioAttributions: string [] | null,
     posted: Boolean|null
     pipelineId: string | null
 
 }
 export interface NewsContent{
-headline: String,
-summary: String,
-keywords: String[],
-highlightWords: String[],
+headline: string,
+summary: string,
+keywords: string[],
+highlightWords: string[],
+diffusion_prompts?:string[],
 }
 
 export interface ImageData{
@@ -135,4 +136,11 @@ export interface SocialAccount{
 export interface SourcerRequest{
     pipeline: Pipeline,
     quantity: number
+}
+
+// Differetn strateies will want different things. Ex gemini wants a prompt but investigate api wants a url to crawl
+export interface LlmRequest{
+    text?: string,
+    text_list?:string[],
+    url?:string
 }

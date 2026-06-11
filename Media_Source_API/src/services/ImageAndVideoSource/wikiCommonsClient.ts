@@ -121,6 +121,10 @@ export class WikiCommonsImageStrategy implements ImageSourceStrategy {
     }
 
     public async fetchImages(request: ImageSourceRequest): Promise<ImageData[]> {
+        const keywords = request.keywords
+        if(!keywords){
+            throw new Error("WikiCommons image sourcer did not get any keywords")
+        }
         const quantity = request.quantity ?? 1;
         const searchQueries = this.buildSearchQueries(request.keywords ?? []);
         const results: ImageData[] = [];

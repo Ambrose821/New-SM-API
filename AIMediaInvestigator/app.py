@@ -18,8 +18,6 @@ router = APIRouter()
 # ---- Key Auth ---
 
 
-
-
 @router.get("/")
 async def healthz(): return {"ok": True, "API" : "Ai Media Investigator"}
 

@@ -16,7 +16,7 @@ const router = express.Router()
 
 const SOURCE_OPTIONS: SourceType[] = ['rssApp']
 const IMAGE_SOURCE_OPTIONS: ImageSourceType[] = ['openverse', 'pixabay', 'falAI', 'wikicommons', 'runware']
-const LLM_AGENT_OPTIONS: LLMAgentType[] = ['gemini-2.5-flash']
+const LLM_AGENT_OPTIONS: LLMAgentType[] = ['gemini-2.5-flash', 'investigate-api']
 const FREQUENCY_OPTIONS: PipelineFrequency[] = ['daily', 'weekly', 'monthly']
 const DEFAULT_PIPELINE_RUN_QUANTITY = 15
 
