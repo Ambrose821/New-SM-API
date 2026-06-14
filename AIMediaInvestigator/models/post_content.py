@@ -56,19 +56,29 @@ class ImageSearchKeywords(BaseModel):
     )
 
 class DiffusionImageBrief(BaseModel):
-
     model_config = ConfigDict(extra="forbid")
 
-    visual_subjects: list[str] = Field(
-        description="Concrete visible subjects, objects, places, symbols, or brands that should appear in the image. Use short visual phrases only."
+    editorial_scene: str = Field(
+        description="""
+        One vivid, concrete magazine-cover scene that visually tells the article's story.
+        Must be imageable as a single scene.
+        Use physical objects, locations, symbols, and visual action.
+        Avoid generic keyword lists.
+        Good: 'A cracked bank vault door spilling cash into a stormy Wall Street street while warning lights flash over a Federal Reserve building.'
+        Bad: 'financial reports, executives, stock market, economy'.
+        """
     )
 
-    visual_metaphors: list[str] = Field(
-        description="1 to 3 symbolic visual ideas that translate the article into an image. Example: 'gold coins flowing from streaming platforms into Canadian film production'."
+    supporting_visuals: list[str] = Field(
+        min_length=3,
+        max_length=6,
+        description="Concrete visual details to include in the scene, such as props, symbols, buildings, screens, charts, vehicles, flags, or documents."
     )
 
     style_direction: list[str] = Field(
-        description="Visual style, mood, lighting, and composition. Example: 'cinematic editorial illustration', 'vertical 9:16 poster', 'dramatic lighting', 'space for headline text'."
+        min_length=3,
+        max_length=6,
+        description="Style and composition only. Example: cinematic editorial illustration, dramatic lighting, high contrast, vertical 9:16, space for headline text."
     )
 
 

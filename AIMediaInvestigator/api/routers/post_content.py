@@ -36,7 +36,11 @@ async def get_post_content(
         "headline": out.headline,
         "caption": caption,
         "keywords": [out.image_search_keywords.background_key_word],
-        "diffusion_prompts": out.diffusion_prompts.visual_subjects,
+        "diffusion_prompts": [
+            out.diffusion_prompts.editorial_scene,
+            *out.diffusion_prompts.supporting_visuals,
+            *out.diffusion_prompts.style_direction,
+        ]
     }
 
 

@@ -117,7 +117,8 @@ export default class PipelineRunner{
             const imageSourceRequest = {
                 quantity: 1,
                 keywords: keywords,
-                text: newsContent.headline + " " + newsContent.summary
+                text: newsContent.headline + " " + newsContent.summary,
+                diffusion_prompts: newsContent.diffusion_prompts
             } as ImageSourceRequest
 
             const imageSourceStrategies: {

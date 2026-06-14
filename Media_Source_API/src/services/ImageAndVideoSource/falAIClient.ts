@@ -82,30 +82,28 @@ export class FalAIImageStrategy implements ImageSourceStrategy {
 
     private getDefaultSystemImagePrompt() {
         return [
-            "A realistic editorial news photograph.",
-            "Depict a specific real-world scene related to the topic.",
-            "Focus on environment, objects, and context.",
-            "Natural lighting, documentary style.",
-            "Vertical composition with space for text.",
-            "unreal engine",
-            "Topic:"
+            "Create a striking editorial magazine cover illustration.",
+            "Bold symbolic visual metaphor.",
+            "Cinematic lighting, high contrast, dramatic depth.",
+            "Modern viral news post aesthetic.",
+            "Vertical 9:16 composition with space for headline text.",
+            "logo if possible",
+            "Scene:"
         ].join("\\n");
     }
 
     private getDefaultNegativePrompt() {
         return [
             "people",
+            "public figures",
             "portrait",
             "faces",
             "looking at camera",
             "selfie",
             "stock photo",
             "smiling",
-            "posed",
-            "cartoon",
-            "illustration",
             "text",
-            "watermark"
+            "watermark",
         ].join(", ");
     }
 
