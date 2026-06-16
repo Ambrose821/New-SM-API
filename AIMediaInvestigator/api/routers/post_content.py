@@ -12,7 +12,7 @@ from prompts.default_caption import SYSTEM_PROMPT
 router = APIRouter(prefix="/post_content", tags=["post_content"])
 
 
-@router.post("/", response_model=PostContentResponse)
+@router.post("/generate_text_material", response_model=PostContentResponse, include_in_schema=False)
 async def get_post_content(
     request: PostContentRequest,
 ):
@@ -42,6 +42,3 @@ async def get_post_content(
             *out.diffusion_prompts.style_direction,
         ]
     }
-
-
-

@@ -25,7 +25,7 @@ export class InvestigateAgent implements LLMAgent{
             //TODO, Maybe allow system prompt choice upon running a pipeline
         }
         try{
-            const resposne = await fetch(`${INVESTIGATE_API_URL}/post_content`,
+            const resposne = await fetch(`${INVESTIGATE_API_URL}/post_content/generate_text_material`,
                 {
                     method: "POST",
                     headers:{
@@ -58,5 +58,3 @@ export class InvestigateAgent implements LLMAgent{
     }
     
 }
-
-

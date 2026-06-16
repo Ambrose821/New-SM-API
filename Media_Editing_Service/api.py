@@ -11,7 +11,7 @@ from boto3.s3.transfer import TransferConfig
 from dotenv import load_dotenv
 from botocore.exceptions import ClientError, NoCredentialsError,BotoCoreError
 import shutil
-
+import random
 
 #--- Run with uvicorn api:app --host 0.0.0.0 --port 8000 --workers 2 --loop uvloop ##
 # ---- Tunables ----
@@ -21,6 +21,7 @@ FFMPEG_ENCODER = os.getenv("FFMPEG_ENCODER", "libx264")
 TEMPLATES_DIR  = os.getenv("TEMPLATES_DIR", ".")
 TMP_DIR        = "/dev/shm" if os.path.exists("/dev/shm") else None
 FFMPEG_PATH    = shutil.which("ffmpeg")
+MUSIC_DIR      = "./music"
 
 # ---- Globals ----
 app = FastAPI()
@@ -178,6 +179,12 @@ def upload_s3_file(bytes:bytes, file_type:str,bucket:str,s3_key:str):
     except Exception as e:
         _print(f"[S3] Unexpected upload_s3_file Exception: {e}\n{traceback.format_exc()}")
 
+def get_audio_path() -> str:
+    audio_files = os.listdir(MUSIC_DIR)
+    num_files = len(audio_files)
+    index = random.randint(0,num_files-1)
+    return audio_files[index]
+
 def encode_and_upload(image_bytes: bytes, req: RenderReq) -> dict:
     if not FFMPEG_PATH:
         raise RuntimeError("ffmpeg not found. Install ffmpeg and ensure it's on PATH.")
@@ -187,14 +194,15 @@ def encode_and_upload(image_bytes: bytes, req: RenderReq) -> dict:
         FFMPEG_PATH,"-nostdin","-loglevel","error","-y",
         "-loop","1","-t", str(req.duration), "-i", png_path
     ]
-    if req.audio_path:
-        cmd += ["-stream_loop","-1","-i", req.audio_path, "-shortest"]
+    audio_path = get_audio_path()
+    if audio_path:
+        cmd += ["-stream_loop","-1","-i", audio_path, "-shortest"]
     cmd += [
         "-r", str(req.fps),
         "-c:v", (req.encoder or FFMPEG_ENCODER), "-preset", req.preset, "-tune","stillimage",
         "-pix_fmt","yuv420p"
     ]
-    if req.audio_path:
+    if audio_path:
         cmd += ["-c:a","aac","-b:a","128k"]
     cmd += ["-movflags","+frag_keyframe+empty_moov","-f","mp4","pipe:1"]
 
