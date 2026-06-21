@@ -183,7 +183,7 @@ def get_audio_path() -> str:
     audio_files = os.listdir(MUSIC_DIR)
     num_files = len(audio_files)
     index = random.randint(0,num_files-1)
-    return audio_files[index]
+    return f"{MUSIC_DIR}/{audio_files[index]}"
 
 def encode_and_upload(image_bytes: bytes, req: RenderReq) -> dict:
     if not FFMPEG_PATH:
