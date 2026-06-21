@@ -149,7 +149,7 @@ export default class PipelineRunner{
          const mediaEditingPayload = {
             bg_url: backgroundImage?.url ?? "" as String,
             fg_url: foregroundImage?.url ?? "" as String,
-            caption: newsContent.headline,
+            caption: newsContent.headline.toUpperCase(),
             highlight: newsContent.highlightWords,
             category: this.pipeline.genre[0] ?? '',
             brand: "",
@@ -172,7 +172,7 @@ export default class PipelineRunner{
 
          const post:Post = {
             headline: newsContent.headline,
-            description: newsContent.summary,
+            description: mediaObj.genre.includes('finance') ?  newsContent.summary+ "\nTHIS IS NOT FINANCIAL ADVICE" : newsContent.summary,
             thumbnailUrl: renderResponse.thumbnail ,
             videoUrl: renderResponse.video,
             thumbnailKey: renderResponse.thumbnailKey,

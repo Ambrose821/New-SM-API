@@ -21,9 +21,9 @@
     }
     .brand { position:absolute; top: var(--pad); right: var(--pad); color:#fff; font-weight:800;font-size: 50px }
     .pill {
-      position:absolute; top: var(--pad); left: var(--pad);
+      position:absolute; top: calc(var(--pad) + 100px ); left: var(--pad);
       background:#fff; color:#000; padding: 18px 27px; border-radius: 12px; font-weight:800;
-      font-size: 50px
+      font-size: 40px
     }
     .avatar {
       position:absolute; top: calc(var(--pad) + 150px); right: var(--pad);
@@ -32,7 +32,7 @@
       background: url('{{ fg_url }}') center/cover no-repeat;
     }
     .gradient {
-      position:absolute; left:0; right:0; bottom:0; height: 60%;
+      position:absolute; left:0; right:0; bottom:0; height: 65%;
       background: linear-gradient(to top, rgba(0,0,0,.95), rgba(0, 0, 0, 0.792), rgba(0, 0, 0, 0.792),rgba(0, 0, 0, 0.029),rgba(0, 0, 0, 0));
     }
     .caption {
