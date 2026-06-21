@@ -34,17 +34,17 @@ export function FullPostDialog({ open, post, onOpenChange }: FullPostDialogProps
         {post && (
           <div className="space-y-6">
             {post.thumbnailUrl && (
-              <div className="overflow-hidden rounded-lg border bg-gray-50">
+              <div className="overflow-auto w-full rounded-lg border bg-gray-50 min-w-0">
                 <img
                   src={post.thumbnailUrl}
                   alt={String(post.headline)}
-                  className="max-h-[26rem] w-full object-contain"
+                  className="max-h-[26rem] w-full object-contain min-w-0"
                 />
               </div>
             )}
             <section className="space-y-2">
               <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Description</h3>
-              <p className="text-sm leading-6 text-gray-700">
+              <p className="text-sm leading-6 text-gray-700 min-w-0 whitespace-pre-wrap wrap-anywhere">
                 {post.description ?? "No description available."}
               </p>
             </section>
@@ -72,14 +72,14 @@ export function FullPostDialog({ open, post, onOpenChange }: FullPostDialogProps
             </section>
             <section className="space-y-3">
               <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Links</h3>
-              <div className="space-y-2 rounded-lg border bg-gray-50 p-4 text-sm text-gray-700">
+              <div className="space-y-2 rounded-lg border bg-gray-50 p-4 text-sm text-gray-700 min-w-0 whitespace-normal wrap-anywhere">
                 <p><span className="font-medium text-gray-900">Image:</span> <a href={post.thumbnailUrl?post.thumbnailUrl:""}>{post.thumbnailUrl}</a></p>
                 <p><span className="font-medium text-gray-900">Video:</span> <a href={post.videoUrl?post.videoUrl:""}>{post.videoUrl}</a></p>
               </div>
             </section>
             <section className="space-y-3">
               <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Attributions</h3>
-              <div className="space-y-2 rounded-lg border bg-gray-50 p-4 text-sm text-gray-700">
+              <div className="space-y-2 rounded-lg border bg-gray-50 p-4 text-sm text-gray-700 min-w-0">
                 <p><span className="font-medium text-gray-900">Image:</span> {formatAttributions(post.imageAttributions?.map(String))}</p>
                 <p><span className="font-medium text-gray-900">Video:</span> {formatAttributions(post.videoAttributions?.map(String))}</p>
                 <p><span className="font-medium text-gray-900">Audio:</span> {formatAttributions(post.audioAttributions?.map(String))}</p>
