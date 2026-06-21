@@ -93,8 +93,16 @@ export const get_instagram_id = async (facebook_page_id:string) => {
   }
 }
 
-export const scheduleMetaTokenRefresh = () => {
-  //Runs every 59 days
+export const scheduleMetaTokenRefresh = async () => {
+    const startup_token = await get_graph_long_token()
+
+    if(startup_token && startup_token.token){
+      await set_meta_current_token(startup_token.token)
+      console.log("Meta startup token set successfully")
+    }else{
+      console.error("Failed to refresh Meta token")
+    }
+    //Runs every 59 days
   cron.schedule('0 0 */20 * *', async () => {
     console.log('Refreshing Meta Graph API token...');
     const result = await get_graph_long_token();
