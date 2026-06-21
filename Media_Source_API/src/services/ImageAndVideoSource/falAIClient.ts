@@ -24,7 +24,7 @@ export class FalAIImageStrategy implements ImageSourceStrategy {
     private falApiKey: string | null = null;
 
     public constructor(options: FalAIClientOptions = {}) {
-        this.modelName = options.modelName ?? "fal-ai/flux/dev";
+        this.modelName = options.modelName ?? "openai/gpt-image-2";
         this.systemPrompt = options.systemPrompt ?? this.getDefaultSystemImagePrompt() ;
     }
     
@@ -43,12 +43,24 @@ export class FalAIImageStrategy implements ImageSourceStrategy {
              credentials: this.falApiKey
         });
 
-        const prompt_keywords = request.diffusion_prompts?.length ? request.diffusion_prompts : request.keywords
+        const promptParts = request.diffusion_prompts?.filter(Boolean).length
+            ? request.diffusion_prompts.filter(Boolean)
+            : request.keywords.filter(Boolean);
+        if (!promptParts.length) {
+            throw new Error("FalAIImageStrategy requires diffusion prompts or keywords");
+        }
+        const prompt = [
+            this.systemPrompt,
+            `Article-specific image brief:\n${promptParts.join(". ")}`,
+            `Exclude from the generated image: ${this.getDefaultNegativePrompt()}`,
+        ].join("\n\n");
         const result = await fal.subscribe(this.modelName, {
         input: {
-            prompt: this.systemPrompt + (prompt_keywords.join(',')),
-            negative_prompt:this.getDefaultNegativePrompt(),
-            image_size: { width: 1080, height: 1920 }, 
+            prompt,
+            image_size: { width: 1024, height: 1824 },
+            quality: "medium",
+            num_images: request.quantity ?? 1,
+            output_format: "jpeg",
         },
         logs: true,
         onQueueUpdate: (update) => {
@@ -82,28 +94,48 @@ export class FalAIImageStrategy implements ImageSourceStrategy {
 
     private getDefaultSystemImagePrompt() {
         return [
-            "Create a striking editorial magazine cover illustration.",
-            "Bold symbolic visual metaphor.",
-            "Cinematic lighting, high contrast, dramatic depth.",
-            "Modern viral news post aesthetic.",
-            "Vertical 9:16 composition with space for headline text.",
-            "logo if possible",
-            "Scene:"
-        ].join("\\n");
+            "Create a premium vertical editorial image for a social-media news or finance post.",
+            "Treat the article-specific brief as the source of truth. Build the image from its named subject, recognition anchor, article-supported visuals, and supported action.",
+            "Follow the selected visual strategy, mood, and composition literally. Do not replace them with a generic cinematic technology aesthetic.",
+            "Prefer the most realistic and recognizable visual representation of the story. Use symbolism only when the brief explicitly selects symbolic_metaphor.",
+            "Accurately include relevant named brand or company logos, products, buildings, landmarks, vehicles, machinery, and national symbols when requested. Never invent a company, product, building sign, or wordmark.",
+            "Do not depict people, public figures, faces, portraits, silhouettes, crowds, hands, or human body parts; represent person-led stories with associated non-human visual anchors.",
+            "Use credible editorial photography or restrained photoreal editorial art, realistic materials, believable environments, and article-appropriate lighting.",
+            "Do not add lightning, storms, glowing energy, particles, futuristic structures, or dramatic effects unless the article-specific brief supports them.",
+            "Create one coherent scene rather than a montage. Compose edge-to-edge in vertical 9:16 and keep the primary subject within the upper 60 percent for the post layout.",
+            "Do not add headlines, captions, statistics, charts, interfaces, borders, or watermarks. Authentic requested logos and product markings are allowed.",
+        ].join("\n");
     }
 
     private getDefaultNegativePrompt() {
         return [
             "people",
-            "public figures",
+            "person",
+            "public figure",
+            "face",
             "portrait",
-            "faces",
-            "looking at camera",
-            "selfie",
+            "crowd",
+            "human silhouette",
+            "hands",
+            "human body parts",
             "stock photo",
-            "smiling",
-            "text",
+            "generic office workers",
+            "generic handshake",
+            "collage",
+            "split screen",
+            "poster layout",
+            "headline",
+            "caption",
+            "large text overlay",
+            "random lettering",
+            "chart",
+            "infographic",
+            "user interface",
             "watermark",
+            "border",
+            "low detail",
+            "distorted face",
+            "extra fingers",
         ].join(", ");
     }
 

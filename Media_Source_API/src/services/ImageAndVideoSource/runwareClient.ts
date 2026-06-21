@@ -114,7 +114,9 @@ export class RunwareImageStrategy implements ImageSourceStrategy {
     }
 
     private buildPrompt(request: ImageSourceRequest) {
-        const topic = request.diffusion_prompts?.filter(Boolean).join(", ").length || request.text?.trim() || request.keywords?.filter(Boolean).join(", ");
+        const topic = request.diffusion_prompts?.filter(Boolean).length
+            ? request.diffusion_prompts.filter(Boolean).join(". ")
+            : request.text?.trim() || request.keywords?.filter(Boolean).join(", ");
 
         if (!topic) {
             throw new Error("RunwareClient requires text or a keywords array request");
@@ -139,24 +141,44 @@ export class RunwareImageStrategy implements ImageSourceStrategy {
 
     private getDefaultSystemImagePrompt() {
         return [
-            "Create a high-quality vertical editorial image for a social media news post.",
-            "The result should look like credible contemporary photography, not a poster, illustration, or stock-photo montage.",
-            "Use natural lighting, realistic materials, believable environments, and a clear subject related to the topic.",
-            "Compose for a 9:16 frame with enough negative space for overlaid headline text.",
-            "Avoid text, logos, watermarks, borders, UI, exaggerated expressions, surreal artifacts, and graphic violence.",
+            "Create a premium vertical editorial image for a social-media news or finance post.",
+            "Treat the article-specific brief as the source of truth. Build the image from its named subject, recognition anchor, article-supported visuals, and supported action.",
+            "Follow the selected visual strategy, mood, and composition literally. Do not replace them with a generic cinematic technology aesthetic.",
+            "Prefer the most realistic and recognizable visual representation of the story. Use symbolism only when the brief explicitly selects symbolic_metaphor.",
+            "Accurately include relevant named brand or company logos, products, buildings, landmarks, vehicles, machinery, and national symbols when requested. Never invent a company, product, building sign, or wordmark.",
+            "Do not depict people, public figures, faces, portraits, silhouettes, crowds, hands, or human body parts; represent person-led stories with associated non-human visual anchors.",
+            "Use credible editorial photography or restrained photoreal editorial art, realistic materials, believable environments, and article-appropriate lighting.",
+            "Do not add lightning, storms, glowing energy, particles, futuristic structures, or dramatic effects unless the article-specific brief supports them.",
+            "Create one coherent scene rather than a montage. Compose edge-to-edge in vertical 9:16 and keep the primary subject within the upper 60 percent for the post layout.",
+            "Do not add headlines, captions, statistics, charts, interfaces, borders, or watermarks. Authentic requested logos and product markings are allowed.",
         ].join("\n");
     }
 
     private getDefaultNegativePrompt() {
         return [
-            "text",
+            "people",
+            "person",
+            "public figure",
+            "face",
+            "portrait",
+            "crowd",
+            "human silhouette",
+            "hands",
+            "human body parts",
+            "stock photo",
+            "generic office workers",
+            "generic handshake",
+            "collage",
+            "split screen",
             "caption",
             "headline",
-            "logo",
+            "large text overlay",
+            "random lettering",
+            "chart",
+            "infographic",
+            "user interface",
             "watermark",
-            "poster",
-            "cartoon",
-            "illustration",
+            "border",
             "low quality",
             "distorted hands",
             "distorted face",
