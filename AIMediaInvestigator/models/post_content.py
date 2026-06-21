@@ -55,7 +55,7 @@ class DiffusionImageBrief(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     story_type: str = Field(
-        description="A concise factual classification of what happened in the article, such as infrastructure expansion, product launch, corporate performance, regulation, security incident, partnership, or scientific development."
+        description="A concise factual classification of what happened in the article, such as infrastructure expansion, product launch, corporate performance, regulation, security incident, partnership, scientific development, or pop culture event."
     )
 
     primary_subject: str = Field(
@@ -64,6 +64,16 @@ class DiffusionImageBrief(BaseModel):
 
     recognition_anchor: str = Field(
         description="The strongest article-supported non-human visual anchor: an exact company/brand and logo, product, building, landmark, vehicle, machine, flag, currency, or location. For a person-led story, use their most relevant associated organization, product, place, or symbol."
+    )
+
+    supporting_recognition_anchors: list[str] = Field(
+        min_length=1,
+        max_length=3,
+        description="One to three additional article-supported anchors that make the subject understandable without a headline. Build a recognition stack: identity or geography (such as an EU flag), domain (such as data-center servers), and when concrete, consequence or comparison. Each anchor must add distinct information and coexist naturally in one scene."
+    )
+
+    visual_relationship: str = Field(
+        description="One sentence explaining how the primary and supporting recognition anchors will be physically combined in one believable scene to communicate the article. This must describe spatial or material relationships, not a collage, split screen, chart, or list."
     )
 
     article_visual_evidence: list[str] = Field(
@@ -97,7 +107,7 @@ class DiffusionImageBrief(BaseModel):
         "financial_institution",
         "symbolic_metaphor",
     ] = Field(
-        description="Choose exactly one strategy that most naturally represents the article evidence. Use symbolic_metaphor only when concrete_scene_available is false and no recognizable real-world scene is strong enough."
+        description="Choose exactly one strategy that most naturally represents the article evidence. When one physical cause connects multiple named products, brands, or industries, strongly prefer product_showcase or object_still_life with one dominant anchor and article-supported secondary objects in a coherent environment. Use symbolic_metaphor only when concrete_scene_available is false and no recognizable real-world scene is strong enough."
     )
 
     mood: Literal[
@@ -138,25 +148,29 @@ class DiffusionImageBrief(BaseModel):
     editorial_scene: str = Field(
         description="""
         One coherent editorial scene built primarily from article_visual_evidence,
-        recognition_anchor, and supported_action. Follow the selected visual_strategy,
-        mood, and composition. Prefer the most realistic and recognizable representation
-        of the story. Style may enhance the concrete scene but may not replace it. Never
+        recognition_anchor, supporting_recognition_anchors, visual_relationship, and
+        supported_action. Follow the selected visual_strategy, mood, and composition.
+        Prefer the most realistic and recognizable representation of the story. A viewer
+        should understand both the specific subject and the broader domain without reading
+        a headline. Style may enhance the concrete scene but may not replace it. Never
         add people, body parts, invented entities, invented wordmarks, unsupported weather,
-        or fabricated physical events. Use symbolism only when concrete_scene_available
-        is false. The scene must be one image, not a collage or list.
+        fabricated physical events, speculative interfaces, or unverified numerical data.
+        Device screens may show an exact official logo, a simple branded splash screen, or
+        non-informational article-relevant imagery. Use symbolism only when
+        concrete_scene_available is false. The scene must be one image, not a collage or list.
         """
     )
 
     supporting_visuals: list[str] = Field(
         min_length=2,
         max_length=5,
-        description="Two to five details drawn from article_visual_evidence or naturally required by the selected real environment. Strengthen recognition and factual understanding, not generic drama. No unsupported weather, energy effects, charts, UI, screenshots, headlines, or decorative filler."
+        description="Two to five details drawn from article_visual_evidence or naturally required by the selected real environment. Reinforce the recognition stack with meaningful identity, geography, domain, or consequence details while preserving one focal point. For product_showcase or object_still_life, use relevant products, components, packaging, materials, or background context to show the article's physical relationship through proximity and consistent scale. Screens may show exact official logos, simple branded splash screens, or non-informational article-relevant imagery. Strengthen recognition and factual understanding, not generic drama. No unsupported weather, energy effects, speculative UI, charts, tickers, prices, percentages, metrics, tickets, screenshots, headlines, or decorative filler."
     )
 
     style_direction: list[str] = Field(
         min_length=3,
         max_length=6,
-        description="Three to six production directions that implement the selected mood and composition: editorial photography or restrained photoreal editorial art, article-appropriate lighting, camera/lens, depth, materials, color treatment, and vertical 9:16 framing. Styling must remain secondary to article evidence. Keep the main subject in the upper 60 percent for the post layout and request no rendered text."
+        description="Three to six production directions that implement the selected mood and composition: editorial photography or restrained photoreal editorial art, article-appropriate lighting, camera/lens, depth, materials, color treatment, and vertical 9:16 framing. For product and still-life strategies, favor realistic commercial-editorial photography, tactile materials, accurate proportions, one coherent light source, and shallow-to-moderate depth of field rather than sterile catalog rendering. Styling must remain secondary to article evidence. Keep the main subject in the upper 60 percent for the post layout and request no rendered text."
     )
 
 

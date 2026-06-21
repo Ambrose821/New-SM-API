@@ -46,6 +46,8 @@ async def get_post_content(
             f"Story type: {out.diffusion_prompts.story_type}",
             f"Primary subject: {out.diffusion_prompts.primary_subject}",
             f"Recognition anchor: {out.diffusion_prompts.recognition_anchor}",
+            *(f"Supporting recognition anchor: {item}" for item in out.diffusion_prompts.supporting_recognition_anchors),
+            f"Visual relationship: {out.diffusion_prompts.visual_relationship}",
             *(f"Article-supported visual: {item}" for item in out.diffusion_prompts.article_visual_evidence),
             f"Supported action: {out.diffusion_prompts.supported_action}",
             f"Central consequence: {out.diffusion_prompts.central_consequence}",

@@ -204,17 +204,25 @@ Complete this reasoning inside the required structured fields:
 
 1. Classify what actually happened in story_type.
 2. Identify the exact primary_subject and strongest non-human recognition_anchor.
-3. Extract article_visual_evidence: physical objects, products, machines, buildings, locations, infrastructure, materials, weather, or observable actions explicitly supported by the article.
-4. Record a supported_action. If the article states no physical action, say so rather than inventing one.
-5. State the central_consequence without converting it into a fake physical event.
-6. Decide whether a strong concrete scene is available.
-7. Choose exactly one visual_strategy, mood, and composition from the schema.
-8. Write the final scene from that plan.
+3. Select supporting_recognition_anchors that add the missing identity/geography, domain, and consequence or comparison needed to understand the story without text.
+4. Explain in visual_relationship how those anchors coexist physically in one believable scene.
+5. Extract article_visual_evidence: physical objects, products, machines, buildings, locations, infrastructure, materials, weather, or observable actions explicitly supported by the article.
+6. Record a supported_action. If the article states no physical action, say so rather than inventing one.
+7. State the central_consequence without converting it into a fake physical event.
+8. Decide whether a strong concrete scene is available.
+9. Choose exactly one visual_strategy, mood, and composition from the schema.
+10. Write the final scene from that plan.
 
 VISUAL STRATEGY RULES
 
 - Prefer the most realistic and recognizable representation of the article.
 - Select the strategy that naturally fits the evidence; do not rotate choices randomly for novelty.
+- Do not stop after finding one technically relevant object. Build a recognition stack with one dominant anchor and one to three complementary article-supported anchors so the image communicates both who/where the story concerns and what domain or consequence it involves.
+- For geographic, geopolitical, regulatory, or national stories, combine a recognizable geographic or institutional anchor—such as an exact flag, landmark, government building, or national symbol—with the concrete subject matter of the story. A generic building, server room, factory, or skyline alone is insufficient when geography is central.
+- Integrate anchors through a real environment, foreground/background relationship, reflection, material proximity, or natural architecture. Never arrange them as separate panels, floating icons, a comparison graphic, or a collage.
+- When an article connects several named consumer products, brands, or industries through one shared physical cause, strongly prefer product_showcase or object_still_life. Choose one dominant recognition anchor and arrange two to four article-supported secondary objects around it in one believable photographed environment.
+- Show causal relationships through physical proximity and materials when possible. For example, place affected electronics with the chips or components driving their costs rather than representing price pressure with arrows, charts, floating currency, or glowing effects.
+- A multi-product scene must read as an intentional editorial still life, not a collage: consistent scale, one surface or environment, one light source, natural overlap, coherent depth, and one clear focal point.
 - When concrete_scene_available is true, do not select symbolic_metaphor.
 - Use symbolic_metaphor only when the article provides no strong concrete real-world scene. Use one metaphor at most.
 - Different story consequences require different moods. Do not make routine partnerships, earnings, product news, or corporate changes look threatening or catastrophic.
@@ -228,15 +236,20 @@ FACTUAL RULES
 - Do not create a fictional branded headquarters. A named company does not imply that an imagined office tower should carry its logo.
 - Do not include people, public figures, faces, portraits, silhouettes, crowds, hands, or body parts. For person-led stories, use the strongest article-relevant organization, product, place, document, vehicle, or symbol.
 - Do not substitute generic offices, generic servers, or generic futuristic machinery when the article provides more specific visual evidence.
+- Real logos and brand marks are encouraged on relevant physical products, packaging, buildings, and device screens when the exact entity is named in the article.
+- Screens may be visually active and useful. They may show one exact official logo or branded splash screen on a simple background, or a non-informational article-relevant image. Do not make every screen blank, dark, or blurred.
+- Never invent or reconstruct an app interface, website, operating-system screen, notification, menu, control panel, trading terminal, or dashboard. If software is central to the story, show its exact official logo or simple branded splash screen rather than a speculative interface.
+- Never generate factual-looking but unverified information: stock charts, candlesticks, price tickers, share prices, percentages, exchange rates, KPIs, analytics, rankings, scores, dates, tickets, receipts, financial documents, or numerical metrics. This rule applies to screens, signs, packaging, papers, and background displays.
 
 IMAGE RULES
 
 - Produce one coherent editorial scene, not a collage or montage.
 - Prefer credible editorial photography or restrained photoreal editorial art with realistic materials and believable lighting.
+- For product_showcase and object_still_life, favor tactile materials, accurate product proportions, practical or natural lighting, shallow-to-moderate depth of field, and subtle background context. The result should resemble a carefully art-directed editorial photograph, not a sterile catalog render.
 - Do not automatically add storm clouds, lightning, rain, sparks, glowing energy, data particles, futuristic structures, or extreme scale. Include an effect only when supported by the article or essential to the explicitly selected metaphor.
 - Generate avoid_visual_cliches specifically for this article. Never exclude something the article explicitly supports.
 - Compose vertically in 9:16. Keep the important subject within the upper 60 percent because the post template places headline text below it.
-- The generated image must contain no added headline, caption, statistics, chart, infographic, interface, screenshot, border, or watermark. Authentic requested logos and product markings are allowed.
+- The generated image must contain no added headline, caption, statistics, chart, infographic, speculative interface, screenshot, border, or watermark. Authentic requested logos, product markings, simple branded splash screens, and non-informational article-relevant screen imagery are allowed.
 - Never ask the image model to render quotes or article text.
 
 FINAL SCENE RULE
@@ -252,6 +265,25 @@ Example for an NVIDIA data-center expansion article:
 - scene: A wide editorial photograph inside a modern data center showing identifiable NVIDIA GPU server hardware integrated into long operational rows with visible cooling infrastructure and realistic neutral industrial lighting.
 
 Bad: A floating NVIDIA logo above a glowing skyscraper in a lightning storm.
+
+Example for an article about AI chip demand increasing prices across iPhones, Xbox storage, computers, and vehicles:
+- strategy: object_still_life
+- anchor: Apple iPhone
+- evidence: iPhone, memory chips, Xbox storage hardware, computer components, automotive context
+- mood: cautious
+- composition: close_up
+- scene: A realistic editorial still life with an iPhone as the dominant foreground subject standing among exposed memory chips, with recognizable gaming storage and computer hardware packaging arranged naturally nearby and a softly blurred vehicle in the background, all photographed under one warm practical light with convincing scale and shallow depth of field.
+
+Example for an article about Europe falling behind the United States and China in AI infrastructure:
+- strategy: documentary_environment
+- primary anchor: European Union flag
+- supporting anchors: operational data-center server racks, recognizable European institutional architecture
+- relationship: A real EU flag occupies the foreground outside a glass-walled data center, with extensive server infrastructure visible naturally through the building behind it.
+- mood: cautious
+- composition: asymmetric_foreground
+- scene: A realistic editorial photograph with a European Union flag moving in the foreground beside a modern European data center, while rows of operational AI server racks and cooling infrastructure remain clearly visible through the glass behind it, combining immediate European identity with the physical infrastructure at stake.
+
+Bad: An anonymous glass office building with generic servers and no European visual identity.
 
 Return all caption and image fields required by the response schema.
 '''
