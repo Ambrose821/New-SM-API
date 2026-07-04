@@ -4,6 +4,7 @@ from crawl4ai import AsyncWebCrawler, CrawlerRunConfig
 from crawl4ai.content_filter_strategy import PruningContentFilter
 from crawl4ai.markdown_generation_strategy import DefaultMarkdownGenerator
 from crawl4ai.models import CrawlResult
+from fastapi.concurrency import run_in_threadpool
 from core.LLMs.llm import LLM
 from models.post_content import PostContent
 from exception_handlers.exceptions import BadRequestError,UnexpectedError
@@ -35,7 +36,11 @@ class PageSearcher:
         if not page_markdown:
             raise BadRequestError(f"Error getting pagemarkdown. Verify url is vaid: {url}")
         
-        result: PostContent = self.llm.post_content_prompt(system_prompt=system_prompt, input_prompt=page_markdown)
+        result: PostContent = await run_in_threadpool(
+            self.llm.post_content_prompt,
+            system_prompt=system_prompt,
+            input_prompt=page_markdown,
+        )
         return result
         
             
@@ -48,13 +53,17 @@ class PageSearcher:
         if not page_markdown:
             raise ValueError(f"Error getting page markdown, Verify url is valid: {url}")
         try:
-            result = self.llm.simple_prompt(system_prompt=system_prompt,input_prompt=page_markdown)
+            result = await run_in_threadpool(
+                self.llm.simple_prompt,
+                system_prompt=system_prompt,
+                input_prompt=page_markdown,
+            )
         except BaseException as e:
             raise Exception(f"LLM Error in PageSearcher: {e}")
         return result.output_text
         
     async def _get_page_markdown(self,url: str) -> str | None:
-        raw_html = self._get_raw_html(url)
+        raw_html = await run_in_threadpool(self._get_raw_html, url)
         raw_html_content = f"raw:{raw_html}"
 
         async with AsyncWebCrawler() as crawler:
