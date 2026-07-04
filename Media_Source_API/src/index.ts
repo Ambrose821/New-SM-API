@@ -34,7 +34,7 @@ async function openverseSetup(){
 openverseSetup()
 
 //Meta token handling 
-scheduleMetaTokenRefresh();
+// scheduleMetaTokenRefresh();
 
 
 
@@ -96,65 +96,5 @@ app.use(function(err:any, req:any, res:any, next:any) {
 app.listen(PORT, () =>{ 
     console.log(`Server Running on ${PORT}`)
 })
-
-
-
-//Play area
-
-// import { mongoSubscriber } from './pipeline/pipelineSubscribers/mongoSubscriber'
-// import { FalAIImageStrategy } from './services/ImageAndVideoSource/falAIClient'
-
-
-
-// //Connect to Mongo
-// //console.log(process.env.MONGO_URI)
-// //Test pipeline 
-// const testPipeline: Pipeline = {
-//   id: null,
-//   name: 'RSS App Tech Test Pipeline',
-//   description: 'Test pipeline using rss.app tech feed',
-//   source: 'rssApp',
-//   source_url: 'https://rss.app/feeds/tt9zcrPi3NtixMvz.xml',
-//   genre: ['politics'],
-//   frequency: '',
-//   backgroundImageSource: {
-//     strategy: 'falAI',
-//     model: null,
-//     systemPrompts: undefined,
-//     promptInfo: undefined,
-//   },
-//   foregroundImageSource: null,
-//   llm: {
-//     agent: 'gemini-2.5-flash',
-//   },
-//   socialAccountId: null,
-//   isActive: true,
-// };
-
-// const runner = new PipelineRunner(testPipeline);
-
-
-
-// async function test(){
-//   try{
-//     // const string = await OpenverseTokenHandler.getInstance().getCurrentAccessToken();
-//     // console.log(string)
-//     runner.addSubscriber(new mongoSubscriber())
-//     await runner.runPipeline()
-//     // const cli = new OpenverseClient();
-//     // const imageData = await cli.getImagesFromKeyWords(1, ['trump','russia'])
-//     }catch(err){
-//       console.log("Test pipeline error: ",err)
-//     }
-// }
-
-
-// try{
-// // test()
-// }catch(error){
-//   console.log(error)
-// }
-
-
 
 module.exports = app

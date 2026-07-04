@@ -73,7 +73,7 @@ export default function PostCard({
                     </label>
                 )}
                 <div className="flex flex-row justify-between items-center gap-2">
-                    <Button variant="ghost" className="px-0" onClick={onViewFullPost}>
+                    <Button variant="ghost" onClick={onViewFullPost}>
                         Full Post
                     </Button>
                     <Button

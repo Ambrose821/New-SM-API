@@ -47,3 +47,16 @@ export const runPipeline = async (
         throw new Error("Error Running Pipeline: " + error)
     }
 }
+
+
+export const deletePipelines = async (pipelineIds: string[]) =>{
+    try{
+        await api.delete('/pipelines', {data: {pipelineIds: pipelineIds}})
+        return true
+
+    }catch(error: any){
+        console.log(error.message? error.message: error)
+        return false
+    }
+
+}

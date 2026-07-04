@@ -1,7 +1,7 @@
 import express from 'express'
 import {
     createPipeline,
-    deletePipeline,
+    deletePipelines,
     getPipelineById,
     getPipelines,
     isValidPipelineId,
@@ -168,24 +168,31 @@ router.patch('/:id', async (req, res) => {
     }
 })
 
-router.delete('/:id', async (req, res) => {
+router.delete('/', async (req, res) => {
     try{
-        const { id } = req.params
-        if(!isValidPipelineId(id)){
-            return res.status(400).json({ message: 'Invalid pipeline id' })
+        const {pipelineIds} = req.body as { pipelineIds?: string[]};
+
+        if(!Array.isArray(pipelineIds) || pipelineIds.length === 0) {
+            return res.status(400).json({message:'postIds must be a non-empty array' })
         }
 
-        const deletedPipeline = await deletePipeline(id)
-        if(!deletedPipeline){
-            return res.status(404).json({ message: 'Pipeline not found' })
+        if(pipelineIds.some((id) => !isValidPipelineId(id))){
+            return res.status(400).json({message: 'Some pipeline Ids are invalid'})
         }
 
-        res.status(200).json({ message: 'Pipeline deleted', pipelineId: id })
+        const uniqueIds = [...new Set(pipelineIds)]
+
+        const deleteResult = await deletePipelines(pipelineIds)
+        res.status(200).json({
+            message: 'Pipelines deleted',
+            deletedPipelineCount: deleteResult.deletedCount ?? 0,
+            pipelineIds: uniqueIds,
+        });
+
     }catch(error){
-        res.status(500).json({ message: 'Error deleting pipeline', error })
+        res.status(500).json({message: 'Error deleting pipelines: ', error})
     }
 })
-
 
 
 export default router

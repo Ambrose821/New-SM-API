@@ -379,9 +379,7 @@ const activeSelectedPostIds = isDeleting ? selectedPostIdsForDeletion : selected
           {(targetSocial || isDeleting) && 
             <div className="relative mt-4 flex flex-col gap-3 rounded-lg border bg-gray-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-sm font-semibold">Selecting posts for {targetSocial ? targetSocial.handle : "Deletion"}</p>
-                <p className="text-sm font-semibold">({activeSelectedPostIds.size}) post(s)</p>
-                
+                <p className="text-sm font-semibold">Selecting {activeSelectedPostIds.size} posts for {targetSocial ? targetSocial.handle : "Deletion"}</p> 
               </div>
 
               <div className="flex flex-row gap-4 ">

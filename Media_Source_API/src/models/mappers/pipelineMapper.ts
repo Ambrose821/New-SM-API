@@ -58,16 +58,24 @@ export function isValidSocialAccountId(socialAccountId: string) {
   return mongoose.Types.ObjectId.isValid(socialAccountId);
 }
 
-export async function getPipelines() {
-  const pipelines = await PipelineModel.find().select('-__v').sort({ createdAt: -1 }).lean();
-  return pipelines.map(toPipeline);
+export async function getPipelines(pipelineIds: string[] = []) {
+  if(!pipelineIds.length){
+    const pipelines = await PipelineModel.find().select('-__v').sort({ createdAt: -1 }).lean();
+    return pipelines.map(toPipeline);
+  }
+  const pipelines = await PipelineModel.find({_id: {$in: pipelineIds}}).select('-__v').sort({ createdAt: -1 }).lean();
+  return pipelines
 }
+
+
 
 export async function getPipelineById(pipelineId: string) {
   const pipeline = await PipelineModel.findById(pipelineId).select('-__v').lean();
   return pipeline ? toPipeline(pipeline) : null;
 }
 
-export async function deletePipeline(pipelineId: string) {
-  return PipelineModel.findByIdAndDelete(pipelineId).select('_id').lean();
+
+
+export async function deletePipelines(pipelineIds: string[]){
+  return PipelineModel.deleteMany({_id: {$in: pipelineIds}})
 }

@@ -46,7 +46,7 @@ export function CreatePipelineDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>Create Pipeline</Button>
+        <Button>Create</Button>
       </DialogTrigger>
       <DialogContent className="max-h-[85dvh] overflow-y-auto sm:max-w-4xl">
         <form onSubmit={handleSubmit}>

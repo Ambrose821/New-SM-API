@@ -3,6 +3,7 @@ import {
   Activity,
   Bot,
   CalendarClock,
+  Check,
   DatabaseZap,
   Image,
   Layers3,
@@ -36,6 +37,7 @@ import { Label } from "@/components/ui/label"
 import type { Pipeline } from "@/types"
 import { runPipeline } from "@/util/api/pipeline"
 import { toast } from "sonner"
+import { cn } from "@/lib/utils"
 
 function formatFrequency(frequency: string | null | undefined) {
   if (!frequency) {
@@ -88,7 +90,20 @@ function DetailRow({ label, value }: { label: string; value: string }) {
   )
 }
 
-export function PipelineCard({ pipeline }: { pipeline: Pipeline }) {
+interface PipelineCardProps {
+  pipeline: Pipeline,
+  showSelector: boolean,
+  isSelected: boolean,
+  onSelectedChange: (checked: boolean) => void
+
+}
+
+export function PipelineCard({
+  pipeline,
+  showSelector = false,
+  isSelected = false,
+  onSelectedChange
+}: PipelineCardProps) {
   const [isRunning, setIsRunning] = useState(false)
   const [isRunDialogOpen, setIsRunDialogOpen] = useState(false)
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false)
@@ -135,7 +150,25 @@ export function PipelineCard({ pipeline }: { pipeline: Pipeline }) {
   }
 
   return (
-    <Card className="h-full overflow-hidden rounded-lg border-slate-200 py-0 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md">
+    <Card className="h-full overflow-hidden rounded-lg border-slate-200 py-0 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md relative">
+           {showSelector && (
+                    <label className="absolute top-3 right-3 cursor-pointer">
+                        <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={(event) => onSelectedChange?.(event.target.checked)}
+                            className="sr-only"
+                        />
+                        <span
+                            className={cn(
+                                "flex size-4 items-center justify-center rounded-sm border border-gray-400 bg-transparent transition-colors",
+                                isSelected && "bg-white"
+                            )}
+                        >
+                            <Check className={cn("size-3 text-black", !isSelected && "invisible")} strokeWidth={3} />
+                        </span>
+                    </label>
+                )}
       <CardHeader className="gap-3 px-5 pt-5">
         <CardAction>
           <span

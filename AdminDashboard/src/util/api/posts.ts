@@ -44,6 +44,7 @@ const publishPosts = async (postIds: string[], socialAccountId:string) =>{
 
 const deletePosts = async (postIds: string []) =>{
     try{
+        //TODO Use the delete data for something? idk yet lol
         await api.delete('/posts', {data: {postIds: postIds}})
         return true
     }catch(error:any){
