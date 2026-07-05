@@ -138,7 +138,7 @@ export default function Pipelines(){
            {isDeleting && 
             <div className="relative mt-4 flex flex-col gap-3 rounded-lg border bg-gray-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-sm font-semibold">Selecting {selectedPipelineIds.size} posts for "Deletion"</p> 
+                <p className="text-sm font-semibold">Selecting {selectedPipelineIds.size} pipelines for Deletion</p> 
               </div>
 
               <div className="flex flex-row gap-4 ">
@@ -192,7 +192,7 @@ export default function Pipelines(){
            <DialogHeader>
             <DialogTitle>Delete these pipelines</DialogTitle>
             <DialogDescription>
-              Are you sure you would like to delete these posts?
+              Are you sure you would like to delete these pipelines?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
