@@ -20,12 +20,17 @@ export const getSocialPlatforms = async () =>{
     }
 }
 
-export const createInstagramAccount = async (handle: string, facebookId: string) =>{
+export const connectInstagramAccount = async (code: string) =>{
     try{
-        const response = await api.post('/socials/instagram',{handle, facebookId});
+        const response = await api.get('/socials/instagram',{ 
+            params : {
+                code: code,
+            }
+        });
+
         return response.data;
-    }catch(error){
-        console.error("Error creating Instagram account:", error);
+    }catch(error: any){
+        console.error("Error connecting Instagram account:", error.response?.message);
         throw error;
     }
 }

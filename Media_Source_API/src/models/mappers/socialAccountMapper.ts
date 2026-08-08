@@ -1,13 +1,17 @@
 import mongoose from 'mongoose';
-import { SocialAccount } from '../../types';
+import { InstagramAuthData, SocialAccount } from '../../types';
+import { encryptValue } from '../../security/encryption';
 import SocialAccountModel from '../socialAccount';
 
 export function toSocialAccount(doc: any): SocialAccount {
+
   return {
     _id: doc._id ? String(doc._id) : null,
     platform: doc.platform,
     handle: doc.handle,
     instagramId: doc.instagramId ?? null,
+    instagramToken: doc.instagramToken, //intentionally left encrypted. callers can decrypt
+    authExpiresAt: doc.authExpiresAt
   };
 }
 
@@ -27,7 +31,6 @@ export async function getSocialAccounts(handle: string, platforms: string[]) {
 
 export async function getSocialAccountById(socialAccountId: string) {
   const socialAccount = await SocialAccountModel.findById(socialAccountId)
-    .select('_id platform instagramId handle')
     .lean();
 
   return socialAccount ? toSocialAccount(socialAccount) : null;
@@ -43,11 +46,14 @@ export async function getSocialAccountByInstagramId(instagramId: string) {
   return socialAccount ? toSocialAccount(socialAccount) : null;
 }
 
-export async function createInstagramSocialAccount(handle: string, instagramId: string) {
+export async function createInstagramSocialAccount(data: InstagramAuthData) {
+  const encrypted_token = encryptValue(data.long_access_token).cipherText
   const newAccount = new SocialAccountModel({
     platform: 'instagram',
-    handle,
-    instagramId,
+    handle: data.user_name,
+    instagramId: data.instagram_id,
+    instagramToken: encrypted_token,
+    authExpiresAt: data.expirey_date
   });
 
   await newAccount.save();

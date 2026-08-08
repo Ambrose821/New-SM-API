@@ -1,11 +1,13 @@
 import express from 'express'
+import type { Request, Response } from 'express';
 const router = express.Router();
 import {
     createInstagramSocialAccount,
     getSocialAccountByInstagramId,
     getSocialAccounts
 } from '../models/mappers/socialAccountMapper';
-import {get_instagram_id} from '../services/Socials/meta/metaAuth';
+import { get_instagram_auth_data} from '../services/Socials/meta/instagramAuth';
+import { InstagramAuthData } from '../types';
 
 
 const PLATFORM_OPTIONS = ['twitter','facebook','instagram','tiktok','linkedin']
@@ -33,26 +35,42 @@ router.get('/platforms', (req,res)=>{
     }
 })
 
-router.post('/instagram', async (req, res) =>{
-    try{
-        const {handle, facebookId} = req.body as {handle?: string, facebookId?: string};
-        if(!handle || !facebookId){
-            return res.status(400).json({message: 'Both Handle and Instagram ID are required'})
-        }
-        const instagramId = await get_instagram_id(facebookId);
-        if(!instagramId){
-            return res.status(400).json({message: 'Invalid Facebook Page ID or no associated Instagram account found'})
-        }
 
-        // Check if the account already exists
-        const existingAccount = await getSocialAccountByInstagramId(instagramId);
-        if(existingAccount){
-            return res.status(400).json({message: `Instagram account ${handle} already exists`});
-        }
-        const newAccount = await createInstagramSocialAccount(handle, instagramId);
-        res.status(201).json(newAccount);
+router.get('/instagram', async (req: Request, res: Response) =>{
+    try{
+       const code = req.query.code?.toString() ?? ''
+
+       if(!code){
+        return res.status(400).json({message:'No access code provided'});
+       }
+
+       const instagramAuthData: InstagramAuthData = await get_instagram_auth_data(code);
+       const existingAccount = await getSocialAccountByInstagramId(instagramAuthData.instagram_id)
+
+       if(existingAccount){
+        //update account token only
+       }
+       const newAccount = await createInstagramSocialAccount(instagramAuthData);
+
+       return res.status(200).json({account: newAccount})
+       
     }catch(error){
-        res.status(500).json({message: 'Error creating social account', error});
+        const metaDetails = (error as { meta?: {
+            code?: unknown;
+            subcode?: unknown;
+            fbtraceId?: unknown;
+            requestId?: unknown;
+        }}).meta
+
+        console.error('Error creating Instagram social account:', error);
+
+        return res.status(502).json({
+            message: 'Instagram connection failed',
+            metaCode: metaDetails?.code,
+            metaSubcode: metaDetails?.subcode,
+            traceId: metaDetails?.fbtraceId,
+            requestId: metaDetails?.requestId,
+        });
     }
 })
 

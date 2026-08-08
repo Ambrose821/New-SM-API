@@ -23,7 +23,6 @@ dotenv.config({path: '.env'})
 
 
 import { OpenverseTokenHandler } from './services/ImageAndVideoSource/openVerseAuth'
-import {scheduleMetaTokenRefresh,get_graph_long_token} from './services/Socials/meta/metaAuth'
 
 //May be overkill but guaruntees we have a token scheduled and in the instance
 async function openverseSetup(){
@@ -32,10 +31,6 @@ async function openverseSetup(){
   tokenHandler.scheduleTokenRefresh();
 }
 openverseSetup()
-
-//Meta token handling 
-// scheduleMetaTokenRefresh();
-
 
 
 //DB and Jobs

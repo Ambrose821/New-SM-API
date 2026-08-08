@@ -85,6 +85,7 @@ router.post('/publish', async (req, res) => {
             getSocialAccountById(socialAccountId)
         ]);
 
+        console.log(socialAccount?._id)
         if (posts.length !== uniquePostIds.length) {
             return res.status(404).json({ message: 'One or more posts were not found' });
         }
@@ -109,8 +110,16 @@ router.post('/publish', async (req, res) => {
             return res.status(400).json({ message: 'Instagram account is missing instagramId' });
         }
 
+        if (!socialAccount.instagramToken) {
+            return res.status(400).json({ message: 'Instagram account is missing auth token' });
+        }
+
         const jobs = await Promise.all(
-            uniquePostIds.map((postId) => postProducer({ postId, socialAccountId }))
+            uniquePostIds.map((postId) => postProducer({
+                postId,
+                socialAccountId,
+                encryptedAuthToken: String(socialAccount.instagramToken),
+            }))
         );
 
         res.status(202).json({
@@ -120,8 +129,9 @@ router.post('/publish', async (req, res) => {
                 postId: uniquePostIds[index]
             }))
         });
-    }catch(error){
-        res.status(500).json({message: 'Error queueing post publish', error});
+    }catch(error: any){
+        console.log(error.message)
+        return res.status(500).json({message: 'Error queueing post publish', error: error.message});
     }
 })
 
@@ -167,7 +177,7 @@ router.delete('/', async (req, res) => {
             deletedS3ObjectCount: s3Result.deleted.length,
             postIds: uniquePostIds,
         });
-    }catch(error){
+    }catch(error: any){
         res.status(500).json({message: 'Error deleting posts', error});
     }
 })

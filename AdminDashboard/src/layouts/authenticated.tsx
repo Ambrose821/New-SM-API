@@ -1,24 +1,10 @@
-import { Outlet, useNavigate } from "react-router-dom";
-import { useEffect } from 'react';
-import { useAuth } from "@clerk/clerk-react";
-
+import { Outlet } from "react-router-dom";
 import { SidebarProvider,SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { TargetSocialProvider } from "@/providers/TargetSocialProvider";
 import { MediaApiStateProvider } from "@/providers/MediaApiStateProvider";
 
 export default function Authenticated(){
-
-    const {isLoaded,isSignedIn} = useAuth();
-    const navigate = useNavigate();
-
-    
-    useEffect(()=>{
-            if(!isSignedIn && isLoaded){
-            navigate('/')
-            }
-    })
-    
     return(
         <div className="min-h-dvh bg-white flex" >
             <SidebarProvider>

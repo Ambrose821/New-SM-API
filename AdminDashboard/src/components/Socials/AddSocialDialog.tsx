@@ -20,9 +20,8 @@ import {
   SelectGroup,
   SelectItem,
 } from "@/components/ui/select"
-import { InstagramForm, type InstagramFormValues } from "./Forms/InstagramForm"
-import { createInstagramAccount } from "@/util/api/socials"
-import { toast } from "sonner"
+import { InstagramForm } from "./Forms/InstagramForm"
+
 
 const DEFAULT_PLATFORM = "Instagram"
 
@@ -37,10 +36,7 @@ export function AddSocialDialog({ platforms }: AddSocialDialogProps) {
   }, [platforms])
 
   const [platform, setPlatform] = useState<string>(initialPlatform)
-  const [instagramForm, setInstagramForm] = useState<InstagramFormValues>({
-    username: "",
-    facebookId: "",
-  })
+
 
   useEffect(() => {
     if (!platforms.includes(platform)) {
@@ -53,7 +49,7 @@ export function AddSocialDialog({ platforms }: AddSocialDialogProps) {
   const renderPlatformForm = () => {
     switch (selectedPlatform) {
       case "instagram":
-        return <InstagramForm value={instagramForm} onChange={setInstagramForm} />
+        return <InstagramForm />
       default:
         return <div>Cannot add this platform yet</div>
     }
@@ -61,16 +57,7 @@ export function AddSocialDialog({ platforms }: AddSocialDialogProps) {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    switch(selectedPlatform) {
-      case "instagram":
-        try{
-          await createInstagramAccount(instagramForm.username,instagramForm.facebookId)
-          toast.success("Social Added")
-        }catch(error){
-          toast.error("Something went wrong adding the account")
-        }
-      break;
-    }
+
   }
 
   return (

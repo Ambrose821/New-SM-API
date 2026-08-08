@@ -1,7 +1,9 @@
 import axios from "axios"
 import { Post } from "../../../types"
-import {get_meta_current_token} from "./metaAuth"
-const base_graph_url = `https://graph.facebook.com/v${process.env.GRAPH_API_VERSION}/`
+import { getMetaErrorDetails } from "./instagramAuth"
+import { access } from "fs"
+import { decryptValue } from "../../../security/encryption"
+const base_graph_url = `https://graph.instagram.com/v${process.env.GRAPH_API_VERSION}/`
 
 const buildCaption = (post: Post) => {
   const baseCaption = post.description ?? post.headline
@@ -68,22 +70,22 @@ const getMediaArrayFromPost = (post: Post) => {
 
 const single_media_post_to_instagram = async (
   instagram_id: string,
+  access_token: string,
   post: Post,
   mediaUrlOverride?: string
 ) => {
-  const creation_id = await get_instagram_creation_id(instagram_id, post, {
+  const creation_id = await get_instagram_creation_id(instagram_id, access_token, post, {
     mediaUrlOverride,
   })
-  return instagram_upload(instagram_id, creation_id)
+  return instagram_upload(instagram_id, access_token, creation_id)
 }
 
 const get_instagram_creation_id = async (
   instagram_id: string,
+  access_token: string,
   post: Post,
   options?: { isCarouselItem?: boolean; mediaUrlOverride?: string }
 ) => {
-  const access_token = await get_meta_current_token()
-
   const media = options?.mediaUrlOverride
     ? getMediaFromUrl(options.mediaUrlOverride)
     : getPrimaryMedia(post)
@@ -112,8 +114,7 @@ const get_instagram_creation_id = async (
   return response.data.id as string
 }
 
-const get_instagram_creation_id_status = async (creation_id: string) => {
-  const access_token = await get_meta_current_token()
+const get_instagram_creation_id_status = async (creation_id: string, access_token: string) => {
   const response = await axios.get(`${base_graph_url}${creation_id}`, {
     params: { access_token, fields: "status_code,status" },
   })
@@ -125,12 +126,12 @@ const get_instagram_creation_id_status = async (creation_id: string) => {
   return response.data.status_code as string
 }
 
-const creation_id_wait_for_ready = async (creation_id: string) => {
+const creation_id_wait_for_ready = async (creation_id: string, access_token: string) => {
   let status: string | null = null
   let counter = 0
 
   while (status !== "FINISHED" && status !== "ERROR") {
-    status = await get_instagram_creation_id_status(creation_id)
+    status = await get_instagram_creation_id_status(creation_id, access_token)
     console.log("Checked:", ++counter)
 
     if (status === "FINISHED" || status === "ERROR") {
@@ -143,9 +144,8 @@ const creation_id_wait_for_ready = async (creation_id: string) => {
   return status
 }
 
-const instagram_upload = async (insta_id: string, creation_id: string) => {
-  const access_token = await get_meta_current_token()
-  const creation_id_ready = await creation_id_wait_for_ready(creation_id)
+const instagram_upload = async (insta_id: string, access_token: string, creation_id: string) => {
+  const creation_id_ready = await creation_id_wait_for_ready(creation_id, access_token)
 
   if (creation_id_ready !== "FINISHED") {
     throw new Error(`Creation id was not ready for publish. Status: ${creation_id_ready}`)
@@ -164,12 +164,13 @@ const instagram_upload = async (insta_id: string, creation_id: string) => {
 
 const get_carousel_creation_ids_string = async (
   instagram_id: string,
+  access_token: string,
   media_arr: string[],
   post: Post
 ) => {
   const creation_ids = await Promise.all(
     media_arr.map((mediaUrl) =>
-      get_instagram_creation_id(instagram_id, post, {
+      get_instagram_creation_id(instagram_id, access_token, post, {
         isCarouselItem: true,
         mediaUrlOverride: mediaUrl,
       })
@@ -177,7 +178,7 @@ const get_carousel_creation_ids_string = async (
   )
 
   for (const creation_id of creation_ids) {
-    const creation_id_ready = await creation_id_wait_for_ready(creation_id)
+    const creation_id_ready = await creation_id_wait_for_ready(creation_id, access_token)
     if (creation_id_ready !== "FINISHED") {
       throw new Error(`Creation id was not ready for carousel publish. Status: ${creation_id_ready}`)
     }
@@ -188,10 +189,10 @@ const get_carousel_creation_ids_string = async (
 
 const get_carousel_container = async (
   instagram_id: string,
+  access_token: string,
   post: Post,
   creation_ids_string: string
 ) => {
-  const access_token = await get_meta_current_token()
   const response = await axios.post(`${base_graph_url}${instagram_id}/media`, null, {
     params: {
       access_token,
@@ -206,30 +207,32 @@ const get_carousel_container = async (
 
 const carousel_post_to_instagram = async (
   instagram_id: string,
+  access_token: string,
   media_arr: string[],
   post: Post
 ) => {
-  const creation_ids_string = await get_carousel_creation_ids_string(instagram_id, media_arr, post)
-  const carousel_container_id = await get_carousel_container(instagram_id, post, creation_ids_string)
-  return instagram_upload(instagram_id, carousel_container_id)
+  const creation_ids_string = await get_carousel_creation_ids_string(instagram_id, access_token, media_arr, post)
+  const carousel_container_id = await get_carousel_container(instagram_id, access_token, post, creation_ids_string)
+  return instagram_upload(instagram_id, access_token, carousel_container_id)
 }
 
-export const post_to_instagram = async (instagram_id: string, post: Post, media_arr?: string[]) => {
+export const post_to_instagram = async (
+  instagram_id: string,
+  access_token: string,
+  post: Post,
+  media_arr?: string[],
+) => {
   try {
     const media_urls = media_arr && media_arr.length > 0 ? media_arr : getMediaArrayFromPost(post)
     const post_data =
       media_urls.length > 1
-        ? await carousel_post_to_instagram(instagram_id, media_urls, post)
-        : await single_media_post_to_instagram(instagram_id, post, media_urls[0])
+        ? await carousel_post_to_instagram(instagram_id, access_token, media_urls, post)
+        : await single_media_post_to_instagram(instagram_id, access_token, post, media_urls[0])
 
     return { success: true, post_data }
-  } catch (err: any) {
-    if (err.response) {
-      console.error("Error in post to instagram:", err.response.status, err.response.data)
-      return { success: false, post_data: err.response.data }
-    }
-
-    console.error("Error in post to instagram:", err)
-    return { success: false, post_data: null }
+  } catch (err) {
+    const details = getMetaErrorDetails(err)
+    console.error("Error in post to instagram:", details)
+    return { success: false, post_data: details}
   }
 }

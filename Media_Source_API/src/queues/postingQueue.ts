@@ -5,9 +5,11 @@ import SocialAccount from '../models/socialAccount';
 import { post_to_instagram } from '../services/Socials/meta/metaPosting';
 import { createJob, updateJob } from '../models/mappers/postJobMapper';
 import { PostJob } from './types';
+import { decryptValue } from '../security/encryption';
 interface PostingJobData {
     postId: string,
-    socialAccountId: string
+    socialAccountId: string,
+    encryptedAuthToken: string | null
 }
 
 const connection = new IORedis({
@@ -22,10 +24,10 @@ const postingQueue = new Queue<PostingJobData>('posting', {
 
 // TODO Make platform agnostic.
 const postWorker = new Worker<PostingJobData>('posting', async job => {
-    console.log(`Processing job ${job.id} with data:`, job.data);
-
-    const { postId, socialAccountId } = job.data;
+    const { postId, socialAccountId, encryptedAuthToken } = job.data;
+    console.log(`Processing job ${job.id}`, { postId, socialAccountId });
     
+    //TODOD use mapper and not the direct model FFS
     const post = await Post.findById(postId);
     if (!post) {
         throw new Error(`Post ${postId} not found`);
@@ -44,7 +46,12 @@ const postWorker = new Worker<PostingJobData>('posting', async job => {
         throw new Error(`Instagram account ${socialAccountId} is missing instagramId`);
     }
 
-    const result = await post_to_instagram(String(socialAccount.instagramId), post);
+    if (!encryptedAuthToken) {
+        throw new Error(`Instagram account ${socialAccountId} is missing auth token`);
+    }
+
+    const accessToken = decryptValue(encryptedAuthToken);
+    const result = await post_to_instagram(String(socialAccount.instagramId), accessToken, post);
 
     if (!result.success) {
         throw new Error(`Instagram posting failed for post ${postId}`);

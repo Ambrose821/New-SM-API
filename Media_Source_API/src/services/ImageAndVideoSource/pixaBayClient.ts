@@ -26,7 +26,6 @@ export default class PixabayImageStrategy implements ImageSourceStrategy{
 
         const encodedKeyword = encodeURI(keyword)
         const url = `https://pixabay.com/api/?key=${process.env.PIXPAY_API_KEY}&q=${encodedKeyword}&image_type=photo&order=popular`
-        console.log(url)
 
       
         const response = await axios.get(url)
@@ -40,7 +39,7 @@ export default class PixabayImageStrategy implements ImageSourceStrategy{
           } as ImageData
 
             console.log("====================================================== Large Image URL ===============================================================")
-            console.log(img_data + "\n" +url)
+            console.log(img_data)
             return [img_data]
 
 

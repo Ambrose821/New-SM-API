@@ -16,6 +16,15 @@ const socialAccountSchema = new Schema<SocialAccount>({
     instagramId:{
         type:String,
         required:false
+    },
+    instagramToken: {
+        type:String,
+        required:false
+    },
+    authExpiresAt: {
+        type: Date,
+        required: false
     }
+    
 })
 export default model<SocialAccount>('SocialAccount',socialAccountSchema)

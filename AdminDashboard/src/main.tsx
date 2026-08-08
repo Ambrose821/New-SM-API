@@ -7,6 +7,7 @@ import UnAuthenticated from './layouts/unauthenticated.tsx'
 import Authenticated from './layouts/authenticated.tsx'
 import RequireAuth from './layouts/require-auth.tsx'
 import DashboardHome from './components/dashboard-home.tsx'
+import InstagramRedirect from './pages/instagramRedirect.tsx'
 
 import Posts from './pages/posts.tsx'
 import Socials from './pages/socials.tsx'
@@ -22,7 +23,12 @@ if (!PUBLISHABLE_KEY) {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+    <ClerkProvider 
+      publishableKey={PUBLISHABLE_KEY}
+      signInUrl="/"
+      signInFallbackRedirectUrl="/dashboard"
+      signUpFallbackRedirectUrl={"/dashboard"}
+    >
       <Toaster />
       <BrowserRouter>
         <Routes>
@@ -33,6 +39,7 @@ createRoot(document.getElementById('root')!).render(
               <Route path="posts" element={<Posts/>} />
               <Route path ="socials" element={<Socials/>}/>
               <Route path="pipeline" element={<Pipelines/>}/>
+              <Route path ='instagram/redirect' element={<InstagramRedirect/>}/> {/* TODO, Make a platform agnostic stateful rediret page*/}
             </Route>
           </Route>
         </Routes>

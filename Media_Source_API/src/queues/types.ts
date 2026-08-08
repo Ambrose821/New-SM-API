@@ -7,7 +7,7 @@ export type JobStatus = 'completed' | 'failed' | 'delayed' | 'active' | 'wait' |
 export interface PostJob {
     jobId: string,
     socialAccountId:string,
-    postId:string
+    postId:string,
     status: JobStatus,
     errorMessage: string | null
 }

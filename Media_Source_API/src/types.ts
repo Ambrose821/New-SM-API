@@ -131,6 +131,8 @@ export interface SocialAccount{
     platform: Platform,
     handle: String,
     instagramId: String|null,
+    instagramToken: String|null,
+    authExpiresAt: Date|null,
 }
 
 export interface SourcerRequest{
@@ -143,4 +145,32 @@ export interface LlmRequest{
     text?: string,
     text_list?:string[],
     url?:string
+}
+
+export interface EncryptionResult{
+    cipherText: string,
+    hash: string,
+    ulid: string
+}
+
+export interface InstagramAuthData {
+    user_name: string,
+    instagram_id: string,
+    long_access_token: string
+    expirey_date: Date
+}
+
+export interface InstagramUserInfo{
+    user_id:string,
+    user_name:string
+}
+
+export interface InstagramAuthTokenExchangeResult{
+    access_token: string,
+    user_id: string
+}
+
+export interface InstagramLongTokenResult{
+    token:string,
+    expires_in: number
 }
