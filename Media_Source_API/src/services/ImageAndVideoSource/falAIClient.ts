@@ -51,7 +51,7 @@ export class FalAIImageStrategy implements ImageSourceStrategy {
         }
         const prompt = [
             this.systemPrompt,
-            `Article-specific image brief:\n${promptParts.join(". ")}`,
+            `Image concept:\n${promptParts.join("\n")}`,
             `Exclude from the generated image: ${this.getDefaultNegativePrompt()}`,
         ].join("\n\n");
         const result = await fal.subscribe(this.modelName, {
@@ -94,62 +94,23 @@ export class FalAIImageStrategy implements ImageSourceStrategy {
 
     private getDefaultSystemImagePrompt() {
         return [
-            "Create a premium vertical editorial image for an engaging social-media post.",
-            "Treat the article-specific brief as the source of truth. Build the image from its named subject, recognition anchor, article-supported visuals, and supported action.",
-            "Render the dominant and supporting recognition anchors together according to the stated visual relationship so the specific subject and broader domain are understandable without a headline. Integrate them naturally in one physical scene, never as floating icons or separate panels.",
-            "Follow the selected visual strategy, mood, and composition literally. Do not replace them with a generic cinematic technology aesthetic.",
-            "Prefer the most engaging and recognizable visual representation of the story. Use symbolism only when the brief explicitly selects symbolic_metaphor.",
-            "Accurately include relevant named brand or company logos, products, buildings, landmarks, vehicles, machinery, and national symbols when requested. Never invent a company, logo, product, building sign, or wordmark.",
-            "Do not depict people, public figures, faces, portraits, silhouettes, crowds, hands, or human body parts; represent person-led stories with associated non-human visual anchors.",
-            "Use credible editorial photography or restrained photoreal editorial art, realistic materials, believable environments, and article-appropriate lighting.",
-            "When the brief selects product_showcase or object_still_life, create a believable art-directed photograph with one dominant product, article-supported secondary objects, consistent scale, natural overlap, one coherent light source, and realistic depth of field.",
-            "Screens may remain visually active: show an exact requested official logo, a simple branded splash screen, or non-informational article-relevant imagery. Never invent an app interface, website, operating-system screen, notification, menu, dashboard, trading terminal, or control panel.",
-            "Never render factual-looking unverified data, including charts, candlesticks, price tickers, share prices, percentages, exchange rates, KPIs, rankings, scores, dates, tickets, receipts, documents, or numerical metrics.",
-            // "Do not add lightning, storms, glowing energy, particles, futuristic structures, or dramatic effects unless the article-specific brief supports them.",
-            "Create one coherent scene rather than a montage. Compose edge-to-edge in vertical 9:16 and keep the primary subject within the upper 60 percent for the post layout.",
-            "Do not add headlines, captions, statistics, charts, interfaces, borders, or watermarks. Authentic requested logos and product markings are allowed.",
+            "Create a striking vertical social-media image that catches attention at phone size and makes the viewer want the story behind it.",
+            "Use the supplied concept to choose one dominant subject and at most one secondary element. Make the core subject recognizable; leave the explanation to the caption.",
+            "Create one clear visual hook through framing, a revealing detail, or the relationship between the two elements. Keep the background simple and quiet; omit extra contextual props and symbols even if the concept mentions several.",
+            "A small theatrical touch in lighting, shadow, perspective, or staging is welcome. Use photographic or conceptual art direction with convincing materials. Avoid turning routine news into a threatening or catastrophic scene.",
+            "Preserve the concept's factual core and real physical properties. Never invent events, damage, scientific mechanisms, product capabilities, brands, or branded buildings. Use only authentic relevant logos and product markings; software may appear as its official logo on a simple screen.",
+            "For person-led stories, use an associated non-human object, logo, or place. Compose one edge-to-edge 9:16 scene with the focal elements in the upper 60 percent and a quiet lower area for the headline added later.",
         ].join("\n");
     }
 
     private getDefaultNegativePrompt() {
         return [
-            "people",
-            "person",
-            "public figure",
-            "face",
-            "portrait",
-            "crowd",
-            "human silhouette",
-            "hands",
-            "human body parts",
-            "stock photo",
-            "generic office workers",
-            "generic handshake",
-            "collage",
-            "split screen",
-            "poster layout",
-            "headline",
-            "caption",
-            "large text overlay",
-            "random lettering",
-            "chart",
-            "infographic",
-            "user interface",
-            "trading dashboard",
-            "candlestick chart",
-            "stock ticker",
-            "share price",
-            "percentage",
-            "KPI",
-            "analytics dashboard",
-            "ticket",
-            "receipt",
-            "fabricated metrics",
-            "watermark",
-            "border",
-            "low detail",
-            "distorted face",
-            "extra fingers",
+            "people, faces, silhouettes, or body parts",
+            "clutter, collages, or split screens",
+            "headlines, captions, or decorative text",
+            "charts, infographics, or fabricated data",
+            "invented interfaces, tickets, or documents",
+            "watermarks or borders",
         ].join(", ");
     }
 

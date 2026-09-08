@@ -14,4 +14,4 @@ class PostContentResponse(PostContentBase):
     headline: str
     caption: str
     keywords: list[str]
-    diffusion_prompts: list[str]  # Ordered scene, supporting details, and direction.
+    diffusion_prompts: list[str]  # One self-contained scene prompt; list kept for API compatibility.
